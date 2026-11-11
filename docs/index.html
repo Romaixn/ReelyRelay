@@ -92,6 +92,7 @@
   pre code { font: inherit; color: inherit; }
   .copy { position: absolute; top: 10px; right: 10px; padding: 6px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text); font: 600 13px "Plus Jakarta Sans", system-ui, sans-serif; cursor: pointer; }
   .copy:hover { border-color: var(--dim); }
+  .shortcode { display: inline-block; margin: 4px 0 20px; padding: 14px 24px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg-raised); color: var(--strong); font: 600 clamp(28px, 7vw, 36px)/1.2 ui-monospace, "SF Mono", Menlo, Consolas, monospace; letter-spacing: 0.14em; }
   .note { margin: 20px 0; padding: 16px 18px; max-width: 46em; border-radius: 12px; background: var(--bg-raised); color: var(--muted); font-size: 16px; }
   .note strong { color: var(--strong); font-weight: 600; }
 
@@ -147,16 +148,19 @@
       <h2>Put the APK on your TV</h2>
       <p class="muted">ReelyRelay isn't on an app store, so it is installed by hand. Pick whichever way you already know.</p>
 
+      <h3>With the Downloader app</h3>
+      <p>The quickest way, with nothing but the TV's remote. Install <strong>Downloader</strong> (by AFTVnews) on the TV, open it, and enter this code:</p>
+      <p class="shortcode" aria-label="Downloader code 5410349">5410349</p>
+      <p>Downloader fetches the latest APK and offers to install it. Allow the install when Android asks.</p>
+      <p class="muted">The code is a shortcut for this address, which you can enter instead:</p>
+      <div class="code"><pre><code>github.com/Romaixn/ReelyRelay/releases/latest/download/ReelyRelay.apk</code></pre></div>
+
       <h3>From your phone</h3>
       <ol class="plain">
         <li>On the TV, install <a href="https://play.google.com/store/apps/details?id=com.jstenpal.sendfilestotv">Send Files to TV</a> and open it.</li>
         <li>On your phone, download the APK from <a href="https://github.com/Romaixn/ReelyRelay/releases/latest">the latest release</a> and send it to the TV with the same app.</li>
         <li>Open the file on the TV and allow the install when Android asks.</li>
       </ol>
-
-      <h3>With the Downloader app</h3>
-      <p>Install <strong>Downloader</strong> (by AFTVnews) on the TV and enter this address:</p>
-      <div class="code"><pre><code>github.com/Romaixn/ReelyRelay/releases/latest/download/ReelyRelay.apk</code></pre></div>
 
       <h3>Over ADB</h3>
       <p>This also turns Accessibility on, so you can skip that step in the app.</p>

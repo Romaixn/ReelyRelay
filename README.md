@@ -48,19 +48,25 @@ Every other click - app icons, menus, anything that isn't a recommendation - is 
 
 ReelyRelay isn't on an app store - install the APK from the [Releases](../../releases) page.
 
+### With Downloader
+
+The quickest way, with nothing but the TV's remote.
+
+1. On the TV, install the **Downloader** app (by AFTVnews) and open it.
+2. Enter the code **5410349**.
+3. Downloader fetches the latest APK and offers to install it. Allow the install when Android asks.
+
+The code is a shortcut for this address, which you can enter instead:
+
+```
+github.com/Romaixn/ReelyRelay/releases/latest/download/ReelyRelay.apk
+```
+
 ### From your phone, with Send Files to TV
 
 1. On the TV, install **[Send Files to TV](https://play.google.com/store/apps/details?id=com.jstenpal.sendfilestotv)** and open it.
 2. On your phone, download the APK from [Releases](../../releases) and send it to the TV with the same app.
 3. Open the file on the TV and allow the install when Android asks.
-
-### With Downloader
-
-Install the **Downloader** app (by AFTVnews) on the TV and enter:
-
-```
-github.com/Romaixn/ReelyRelay/releases/latest/download/ReelyRelay.apk
-```
 
 ### Over ADB
 
