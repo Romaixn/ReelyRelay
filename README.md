@@ -1,17 +1,17 @@
-# TVRelay
+# ReelyRelay
 
-[![Latest release](https://img.shields.io/github/v/release/hmartinez94/TVRelay?sort=semver)](../../releases)
+[![Latest release](https://img.shields.io/github/v/release/Romaixn/ReelyRelay?sort=semver)](../../releases)
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue)](LICENSE)
 
-🌐 [Official site](https://hmartinez94.github.io/TVRelay/) — a friendlier overview than this README, if that's more your speed.
+Your TV's home screen recommends a movie, you select it, and it opens in whatever app the recommendation came from. ReelyRelay catches that selection and opens the title in **[Reely Player](https://reelyplayer.app)** instead, after one press to confirm so a stray click never sends you anywhere by accident.
 
-Google TV's home screen recommends a movie, you click it, and it opens whatever app the recommendation happened to come from - usually not the one you actually wanted to watch it in. TVRelay intercepts that click and opens the title in **Nuvio**, **Stremio**, **WuPlay**, **Jellyfin**, **Wholphin**, or **Moonfin** instead, with a one-tap confirmation so a stray click never redirects you by accident.
+<img src="docs/img/home.png" alt="ReelyRelay's home screen on a TV: a green Ready label, and rows for Accessibility, Watch now button, Search for a title and more" width="720">
 
-<img src=".github/screenshots/watch-now-overlay.jpg" alt="A Google TV recommendation page for the movie Obsession, with a 'Watch now in Nuvio' button from TVRelay floating over it" width="720">
+Free, no account. It hosts and provides no content: it reads the title of the recommendation you selected, looks it up on TMDB, and hands you to Reely Player.
 
-*A real recommendation page, with TVRelay's confirm button floating over it.*
+🌐 [Project site](https://romaixn.github.io/ReelyRelay/) - the same guide, easier to read on a phone.
 
-Free, no account, no subscription, no license check. It doesn't host or provide any content itself; it only reads the title of the thing you clicked, looks that title up, and hands you off to an app you already chose in Settings.
+ReelyRelay is a fork of **[TVRelay](https://github.com/hmartinez94/TVRelay)** by Hector Martinez, narrowed to a single player. If it is useful to you, the original project is the one to thank.
 
 ## Contents
 
@@ -19,188 +19,202 @@ Free, no account, no subscription, no license check. It doesn't host or provide 
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Setup](#setup)
-  - [Fire TV (Fire Stick)](#fire-tv-fire-stick)
-- [Metadata provider](#metadata-provider-tmdb--thetvdb)
+  - [Accessibility won't stay on](#accessibility-wont-stay-on)
+  - [Fire TV](#fire-tv)
+- [Settings](#settings)
 - [Limitations](#limitations)
 - [Troubleshooting](#troubleshooting)
 - [Building from source](#building-from-source)
+- [Publishing a release](#publishing-a-release)
 - [Legal notice](#legal-notice)
 - [Credits](#credits)
 
 ## How it works
 
-Android's Accessibility API lets an app observe what's on screen for assistive purposes - TVRelay uses it narrowly, watching only for clicks on the Google TV launcher. When a click's payload includes a movie/show title, TVRelay looks it up (via [TMDB](https://www.themoviedb.org/) by default, or optionally TheTVDB) and offers to open it in your chosen player. Every other click - app icons, menus, anything that isn't a recommendation - is left completely alone, and nothing is read, stored, or sent anywhere beyond that one lookup.
+1. **You pick a recommendation** on the home screen.
+2. **ReelyRelay identifies it.** Android's Accessibility API lets an app observe what's on screen; ReelyRelay uses it narrowly, watching only for clicks on the Google TV launcher. When a click carries a movie or show title, it looks that title up on [TMDB](https://www.themoviedb.org/).
+3. **You confirm, Reely Player opens** on that title's page, through its `reely://detail/{movie|series}/{tmdbId}` link.
 
-Not every recommendation card exposes a title this way; see [Limitations](#limitations).
+<img src="docs/img/watch-now.png" alt="The Watch now in Reely Player button" width="360">
+
+Every other click - app icons, menus, anything that isn't a recommendation - is left alone, and nothing is read, stored, or sent anywhere beyond that one lookup.
 
 ## Requirements
 
-- A device with the **Google TV** launcher (Chromecast with Google TV, or Google TV editions from Sony, TCL, Hisense, etc.). Fire TV doesn't run this launcher out of the box - it uses a separate "Fire TV mode" instead; see [Setup → Fire TV](#fire-tv-fire-stick).
-- **Nuvio**, **Stremio**, **WuPlay**, **Jellyfin**, **Wholphin**, and/or **Moonfin** installed on the device - whichever one you plan to pick in Settings. See [Limitations](#limitations) for how the three Jellyfin-server clients (Jellyfin, Wholphin, Moonfin) differ from Nuvio/Stremio/WuPlay - and how Moonfin differs from the other two.
+- A device with the **Google TV** launcher (Chromecast with Google TV, or Google TV editions from Sony, TCL, Hisense and others), or a **Fire TV** using [Fire TV mode](#fire-tv).
+- **Reely Player** installed on the same device.
 
 ## Installation
 
-TVRelay isn't on Google Play yet - install the APK from this repository's [Releases](../../releases) page.
+ReelyRelay isn't on an app store - install the APK from the [Releases](../../releases) page.
 
-### Option A: via Downloader
+### From your phone, with Send Files to TV
 
-1. On the TV, install the **Downloader** app (by AFTVnews) from Google Play.
-2. Open it and enter the code **9525208** in the URL field - or open [aftv.news/9525208](http://aftv.news/9525208) directly in any browser.
-3. Downloader fetches the APK and offers to install it right away.
-4. If Android TV shows a warning about installing from an unknown source, temporarily allow installation from that source.
+1. On the TV, install **[Send Files to TV](https://play.google.com/store/apps/details?id=com.jstenpal.sendfilestotv)** and open it.
+2. On your phone, download the APK from [Releases](../../releases) and send it to the TV with the same app.
+3. Open the file on the TV and allow the install when Android asks.
 
-### Option B: from your phone, using Send Files to TV
+### With Downloader
 
-1. On the TV, install **[Send Files to TV](https://play.google.com/store/apps/details?id=com.jstenpal.sendfilestotv)** from Google Play.
-2. Open the app on the TV. It will show an address or a QR code to connect from your phone.
-3. From your phone's browser, go to that address and select the APK downloaded from [Releases](../../releases).
-4. Once the file has transferred, the TV will let you start the installation.
-5. If Android TV shows a warning about installing from an unknown source, temporarily allow installation from that source.
+Install the **Downloader** app (by AFTVnews) on the TV and enter:
 
-### Option C: via ADB
+```
+github.com/Romaixn/ReelyRelay/releases/latest/download/ReelyRelay.apk
+```
 
-1. Download the APK from [Releases](../../releases).
-2. Enable developer options on the TV: **Settings → Device Preferences → About → tap "Build" 7 times**.
-3. Enable **USB debugging** or **Network debugging**, depending on the device.
-4. From your computer, install the app and enable its accessibility service in one go:
-   ```
-   adb connect <tv-ip>:5555
-   adb install app-release.apk
-   adb shell appops set com.hmartinez94.tvrelay ACCESS_RESTRICTED_SETTINGS allow
-   adb shell settings put secure enabled_accessibility_services com.hmartinez94.tvrelay/com.hmartinez94.tvrelay.TvRelayAccessibilityService
-   adb shell settings put secure accessibility_enabled 1
-   ```
-   The last three lines turn on the permission that lets TVRelay see launcher clicks at all, bypassing a restriction some Android versions place on sideloaded apps (see [Setup](#setup) below) - safe to run on any device, needed or not. The `settings put secure enabled_accessibility_services` line **replaces** the whole list of enabled accessibility services - if you already use another one (like TalkBack), separate them with a colon (`:`) instead of overwriting it.
+### Over ADB
 
-   With this done, the Accessibility toggle should already show as enabled once you open the app - skip straight to picking a player in [Setup](#setup).
+This also turns Accessibility on, so you can skip that step in the app.
+
+```
+adb connect <tv-ip>:5555
+adb install ReelyRelay.apk
+adb shell appops set com.reely.relay ACCESS_RESTRICTED_SETTINGS allow
+adb shell settings put secure enabled_accessibility_services com.reely.relay/com.reely.relay.RelayAccessibilityService
+adb shell settings put secure accessibility_enabled 1
+```
+
+The fourth line **replaces** the whole list of enabled accessibility services. If you already use another one (like TalkBack), keep it in the list and separate the two with a colon (`:`).
 
 ## Setup
 
-<img src=".github/screenshots/settings.png" alt="TVRelay's Settings screen on Google TV, showing the player choice and accessibility/overlay toggles" width="720">
+Open **ReelyRelay** on the TV. The first run walks you through two steps, and moves on by itself as soon as each one is granted:
 
-Open **TVRelay** from the TV's launcher, accept the first-run disclosure, and pick your player.
+<img src="docs/img/setup.png" alt="Setup step 1 of 2: Turn on ReelyRelay in Accessibility" width="720">
 
-### Turn on in Accessibility settings
+1. **Accessibility** - what lets ReelyRelay see which recommendation you pick. Without it, nothing happens.
+2. **The Watch now button** - optional, recommended. It needs the "Display over other apps" permission. Without it, a recognized title opens in Reely Player straight away, with no confirmation.
 
-If you installed via ADB (Option C above) and ran the extra commands there, this is already done. Otherwise, open **Accessibility & Permissions**, select **"Turn on in Accessibility settings"**, and turn the service on there - without it, nothing else in this app does anything.
+After that, the app's home screen always says whether it is working, and if not, the one thing that is missing.
 
-#### The toggle turns itself off immediately
+### Accessibility won't stay on
 
-On Android 13+, the system blocks sideloaded apps from turning Accessibility on through the normal toggle, as a security measure - if it switches back off right after you enable it, this is why, not a bug. When this happens, TVRelay adds an **"Accessibility won't turn on? Get help"** row to that same screen, which walks you through the fix (look for "Allow restricted setting" on the app's system info screen). If your device doesn't have that option, use the ADB commands from [Installation](#installation) instead - **[atvTools](https://play.google.com/store/apps/details?id=dev.vodik7.atvtools)** (free, on Google Play) can run them from your phone if setting up ADB on a computer isn't an option.
+On Android 13 and later, the system blocks apps that weren't installed from a store from turning Accessibility on: you flip the switch and it turns itself straight back off. That is a safeguard, not a bug. Two ways past it:
 
-On some devices (especially Chinese-manufacturer Android TV boxes with aggressive battery managers), you may also need to exclude TVRelay from any manufacturer "optimizer"/RAM cleaner, or the system will kill the service's process after a few seconds.
+- **Allow restricted setting.** In ReelyRelay: **Accessibility**, then **The switch turns itself off?**, then **Open app info**. Look for "Allow restricted setting", often behind a three-dot menu. Many TVs don't have it.
+- **One ADB command**, then switch Accessibility on again:
 
-### Enable the "Watch now" confirmation
+  ```
+  adb shell appops set com.reely.relay ACCESS_RESTRICTED_SETTINGS allow
+  ```
 
-By default, TVRelay shows a **"Watch now in {App}"** button before opening anything - a loading indicator appears the moment you click a recommendation, then swaps to the confirm button once the title's been identified. Dismissing it with Back or a D-pad press only hides it; it reappears a few seconds later and keeps doing so until you return to the launcher's home screen, so a moment's distraction doesn't lose your result. You can change how long it waits (0.5–15 seconds, default 4) with Settings → **Watch now button** → **"Time until it returns"**, or turn reappearing off with **"Show again after hiding"** if you'd rather a dismissal be final.
+  No computer? **[atvTools](https://play.google.com/store/apps/details?id=dev.vodik7.atvtools)** runs the same line from a phone - type it without the leading `adb shell`.
 
-This needs the **"Display over other apps"** permission, since the button is a small overlay drawn on top of whatever the launcher navigates to. Grant it from Settings → **Watch now button** → **"Show the Watch now button"**, which takes you straight to the right system screen.
+Updating ReelyRelay from inside the app puts the block back; run the command again afterwards, or update over ADB to avoid it.
 
-**Without that permission**, TVRelay falls back to opening your chosen app immediately, with no confirmation step - it still works, just without the accidental-click protection.
+On some devices (especially TV boxes with aggressive battery managers), you may also need to exclude ReelyRelay from the manufacturer's "optimizer" or RAM cleaner, or the system kills the service after a few seconds.
 
-### Fire TV (Fire Stick)
+### Fire TV
 
-Fire TV's home screen doesn't expose which recommendation you clicked, so on a Fire Stick TVRelay uses a separate **"Fire TV mode"** instead of the accessibility detection above - it notices when you open a recommendation, reads its title off the screen with on-device text recognition, and opens it in your chosen player. (Because of this, the "Turn on in Accessibility settings" step above isn't needed on Fire TV.)
+Fire TV's home screen doesn't tell apps which recommendation you picked, so on a Fire TV ReelyRelay uses **Fire TV mode** instead: it notices when you open a recommendation and reads its title off the screen with on-device text recognition. It needs two permissions:
 
-Turn it on in Settings → **"Fire TV mode"**. It needs two one-time permissions:
-
-1. **Usage access** - lets it tell when you've opened a recommendation. Tap **"Grant usage access"**; on most devices this opens the right screen (Settings → Apps → Special app access → Usage access → TVRelay). But **many current Fire TV Stick 4K / 4K Max devices on Fire OS 8 have no Usage access screen at all** - Amazon removed the "Special app access" menu on that generation. On those, grant it once over ADB instead:
+1. **Usage access**, to notice that you opened a recommendation. Many Fire TV Stick 4K / 4K Max devices on Fire OS 8 have no Usage access screen at all; grant it over ADB instead:
 
    ```
-   adb shell appops set com.hmartinez94.tvrelay GET_USAGE_STATS allow
+   adb shell appops set com.reely.relay GET_USAGE_STATS allow
    ```
 
-   No computer? Use an app that opens an ADB shell to the Fire TV - **[atvTools](https://play.google.com/store/apps/details?id=dev.vodik7.atvtools)** (free, on Google Play) works - and run the same line **without** the `adb shell` prefix. The grant survives app updates but is cleared by a full uninstall or factory reset.
-2. **Screen recording** - the standard Android dialog, shown when you tap **"Activate Fire TV mode"**. While it's active Android shows a persistent recording indicator; that's a system requirement, not something TVRelay adds.
+2. **Screen recording**, to read the title. Android shows its recording indicator while Fire TV mode is on; that is a system requirement, not something ReelyRelay adds.
 
-Then open a recommendation and confirm on the **"Watch now"** button. Worth knowing:
+Worth knowing:
 
-- Screen-recording permission is cleared by a reboot, so **re-activate Fire TV mode after restarting** the device.
-- It covers the home screen, mainly Amazon's own recommendation rows - a card that jumps straight into another app (e.g. Netflix) isn't caught.
-- It's not instant: open the recommendation, then press the confirm button.
+- Screen-recording permission is cleared by a restart, so **turn Fire TV mode on again after restarting** the device.
+- It covers the home screen, mainly Amazon's own recommendation rows. A card that jumps straight into another app isn't caught.
 
-**Prefer it to behave exactly as on Google TV?** The advanced alternative is to replace Fire OS's launcher with the real Google TV launcher - a device-level change needing temporary root, which TVRelay isn't involved in, at your own risk:
+## Settings
 
-- [Temp root - Fire TV Stick 4K 2nd Gen (Karat/Mantra series)](https://xdaforums.com/t/temp-root-fire-tv-stick-4k-2nd-gen-series-karat-mantra.4798627/)
-- [Install the Google TV launcher on Fire OS 8 (Karat 2nd Gen 4K)](https://xdaforums.com/t/guide-how-to-install-android-tv-google-play-store-on-fire-os-8-karat-2nd-gen-4k.4798990/#post-90707579)
+| | |
+| --- | --- |
+| **Watch now button** | Whether the button returns after you dismiss it, how long it waits (0.5-15 s, default 4), and "Hold Select to confirm". |
+| **Search for a title** | Type a title yourself; everything after that works like an automatic match. |
+| **Title matching** | "Ask which year to open" when several titles share a name; "Read titles from the screen" for cards that carry no title (see [Limitations](#limitations)). |
+| **YouTube** | Optionally open YouTube video recommendations in SmartTube or TizenTube Cobalt. Off by default, and separate from Reely Player. |
+| **More → TMDB key** | Lookups use a key bundled with the app. If it is ever rate-limited, enter your own free key ([themoviedb.org](https://www.themoviedb.org/), Settings → API). "Send key from phone…" shows a QR code so you can paste it on your phone instead of typing 32 characters with a remote. |
 
-## Metadata provider (TMDB / TheTVDB)
-
-TVRelay uses **[TMDB](https://www.themoviedb.org/)** by default to identify a clicked title, using a key bundled with the app - no setup needed. If you'd rather use your own personal TMDB key instead (for example, if the shared default key is ever rate-limited), enter one from Settings → **More** → **Title database** (get one free at [themoviedb.org](https://www.themoviedb.org/), under Settings → API) - it'll take priority over the bundled one automatically. **TheTVDB** is also available as an alternative provider if TMDB ever gives you a wrong match for a title.
-
-<img src=".github/screenshots/phone-pairing.png" alt="TVRelay's phone-pairing screen, showing a QR code to send a TMDB API key from a phone" width="720">
-
-Typing a 32-character key with a TV remote is painful, so that screen has a **"Send key from phone…"** option: scan the QR code, type or paste the key on the page that opens, and it fills in on the TV automatically within a few seconds - no remote typing required.
+The interface is available in English, French and Spanish.
 
 ## Limitations
 
-- **YouTube video recommendations can optionally redirect to SmartTube or TizenTube Cobalt** (Settings → YouTube → "Open YouTube videos in another app", on by default, with a "Open in" dropdown to pick which of the two) instead of being left alone - independent of whichever movie/show player you've picked above. Confirmed working against real clicks with both apps, including when TizenTube Cobalt is already running in the background. It opens a YouTube search for the video's title, not the exact video. It only redirects a click that opens the official YouTube app, so app tiles and app suggestions in the Apps tab are left alone.
-- **Jellyfin and Wholphin open a search by default, not the title itself** - neither has a universal-catalog deep link the way Nuvio/Stremio/WuPlay do, so picking either just opens its own search screen, pre-filled with the title. **[Wholphin](https://github.com/damontecres/Wholphin)** is a separate, open-source, from-scratch Android TV client for a Jellyfin server (not a fork of the official app) - both connect to the same kind of server, so they share one config screen: in Settings under the "Jellyfin server setup" row, enter your server's URL and an API key (Dashboard → API Keys) and turn on "Find in library first" - once set up, a title that's already on your server opens directly, the same way Nuvio does, regardless of which of the two you picked; anything not on your server still falls back to the search screen.
-- **[Moonfin](https://github.com/Moonfin-Client/Moonfin-Core) is a third Jellyfin-server client, but unlike Jellyfin/Wholphin it has no search screen at all** - it connects to the same kind of server and shares the exact same "Jellyfin server setup" setup above, but "Find in library first" isn't optional for it: with it off, or on a title that isn't on your server, clicking just does nothing (TVRelay reports it couldn't find the title rather than opening Moonfin to a screen it can't act on).
-- **Some recommendation cards, and voice search results, don't expose a title directly** - a real limitation of what the launcher hands third-party apps, not a TVRelay bug, and clicking one does nothing by default. Two ways to still get there:
-  - **Search for a title** (Settings) - type it yourself; everything after that works exactly like an automatically-detected click.
-  - **Read titles from the screen** (Settings → Title matching → "Read titles from the screen", off by default): reads the title straight off the screen using on-device text recognition when a card or voice-search result has no title in its click event, then continues automatically from there. Nothing captured ever leaves the device, but turning this on means Android shows its own persistent screen-recording indicator the whole time it's active, since it uses the same system permission a screen recorder would - that's a system-level notice, not something TVRelay can hide.
-- **The metadata provider can occasionally match the wrong title** if a same-named but different movie or show also exists. When a search returns two or more titles that match *exactly*, TVRelay now asks which one you meant instead of guessing (turn this off from Settings → Title matching → **"Ask which year to open"** if you'd rather it always pick automatically). This can't fully close the gap on its own, though - a genuine data-coverage issue where the provider's catalog simply doesn't have a better candidate at all can still happen. Try [switching provider](#metadata-provider-tmdb--thetvdb) or the manual search with a more specific query (e.g. add the year) if it does.
+- **Some recommendation cards, and voice search results, don't expose a title.** That is a limit of what the launcher hands third-party apps. Use **Search for a title**, or turn on **Title matching → Read titles from the screen** (off by default): it reads the title off the screen on the device, and Android shows its recording indicator while it is on.
+- **TMDB can match the wrong title** when a different movie or show has the same name. When two or more titles match exactly, ReelyRelay asks which one you meant.
+- **Launcher languages.** Detection relies partly on phrases the launcher itself uses, which were captured for English (and, unverified, Spanish). Other languages - French included - rest on language-independent fallbacks, which cover most cards. To add real phrases for a language, see `app/src/main/res/values-fr/arrays.xml`.
+- **YouTube redirect** opens a search for the video's title in the chosen app, not the exact video.
 
 ## Troubleshooting
 
-**Service is enabled, but selecting a recommendation doesn't open anything.** Check that your chosen player is up to date - outdated or unofficial builds (common since none of these are on Google Play) sometimes don't register their deep link scheme correctly. Test the deep link directly, bypassing TVRelay entirely:
+**Accessibility is on, but picking a recommendation does nothing.** First check that Reely Player itself takes the link, with ReelyRelay out of the picture. This should land on Iron Man:
 
 ```
-adb shell am start -a android.intent.action.VIEW -d "nuvio://movie/tt0371746"                                                          # Nuvio, by IMDb id
-adb shell am start -a android.intent.action.VIEW -d "nuvio://tmdb/movie/1726"                                                          # Nuvio, by TMDB id (TVRelay's default provider)
-adb shell am start -a android.intent.action.VIEW -d "wuplay://movie/tt0371746"                                                         # WuPlay
-adb shell am start -a android.intent.action.SEARCH -e query "iron man" -n org.jellyfin.androidtv/org.jellyfin.androidtv.ui.startup.StartupActivity   # Jellyfin (search hand-off)
-adb shell am start -a android.intent.action.VIEW -d "<item id>" -n org.jellyfin.androidtv/org.jellyfin.androidtv.ui.startup.StartupActivity           # Jellyfin (direct open - "Find in library first")
-adb shell am start -a android.intent.action.SEARCH -e query "iron man" -n com.github.damontecres.wholphin/.MainActivity                              # Wholphin (search hand-off)
-adb shell am start -a android.intent.action.VIEW -e itemId "<item id>" -n com.github.damontecres.wholphin/.MainActivity                               # Wholphin (direct open - "Find in library first")
-adb shell am start -a android.intent.action.VIEW -d "moonfin://item?id=<item id>" -p org.moonfin.androidtv                                            # Moonfin (direct open - "Find in library first"; no search hand-off exists)
-adb shell am start -a android.intent.action.VIEW -d "https://www.youtube.com/results?search_query=iron+man" -p org.smarttube.stable    # SmartTube
-adb shell am start -a android.media.action.MEDIA_PLAY_FROM_SEARCH -d "https://www.youtube.com/results?search_query=iron+man" -n io.gh.reisxd.tizentube.cobalt/dev.cobalt.app.MainActivity -f 0x18800000   # TizenTube Cobalt
+adb shell am start -a android.intent.action.VIEW -d "reely://detail/movie/1726" com.reely.reely
 ```
 
-For the direct-open lines, `<item id>` is a real item's `Id` field from your own server (e.g. from Jellyfin's web UI URL when viewing that title, or from its `/Items?searchTerm=...` API response) - it's server-specific, so there's no universal example id the way there is for Nuvio/WuPlay's IMDb-based ones above. It's the same id regardless of whether you're using Jellyfin's own app, Wholphin, or Moonfin, since all three read from the same server.
-
-Each should land on Iron Man's page (or a search for "iron man"). If none of them do, the issue is with the target app's own build, not TVRelay. If they work, the click likely isn't being detected - check for that with:
+If it does, check that the click is being seen:
 
 ```
-adb logcat -s TvRelayService:D WatchNowOverlay:D
+adb logcat -s ReelyRelay:D TitleHandler:D WatchNowOverlay:D PlayerLauncher:D
 ```
+
+Every launcher click logs a `Click event:` line with exactly what the launcher exposed for that card.
 
 ## Building from source
 
-Requires Android Studio / JDK 17+ and the Android SDK. Get a free API key from [TheTVDB](https://www.thetvdb.com/dashboard/account/apikeys) and add it to `local.properties` (not committed):
-
-```
-TVDB_API_KEY=your_key_here
-```
-
-Also get a free key from [TMDB](https://www.themoviedb.org/settings/api) (TMDB is the default provider) and add it the same way:
+Requires JDK 17+ and the Android SDK (platform 37). Get a free API key from [TMDB](https://www.themoviedb.org/settings/api) and put it in `local.properties` (not committed):
 
 ```
 TMDB_API_KEY=your_key_here
 ```
 
-Leaving `TMDB_API_KEY` blank still produces a working build - TMDB lookups just won't resolve anything until either that's set or a user enters their own key in Settings.
+Without it the build still works, but the app can't identify titles until a key is entered in **More → TMDB key**.
 
-Then:
 ```
-.\gradlew.bat assembleDebug
+./gradlew assembleDebug        # app/build/outputs/apk/debug/app-debug.apk
+./gradlew testDebugUnitTest    # opens every screen, in every language
 ```
-The APK is written to `app\build\outputs\apk\debug\app-debug.apk`.
+
+The tests also draw every screen to `app/build/screenshots/` - the quickest way to see a UI change without a TV at hand. The images in this README come from there.
+
+**With Nix:** `nix develop` gives you the JDK and Android SDK with nothing else to install.
+
+**Signing a release:** add these to `local.properties` and run `./gradlew assembleRelease`. Without them the release APK is left unsigned.
+
+```
+RELEASE_STORE_FILE=keystore/release.jks
+RELEASE_STORE_PASSWORD=...
+RELEASE_KEY_ALIAS=...
+RELEASE_KEY_PASSWORD=...
+```
+
+## Publishing a release
+
+Releases are what the in-app updater and the Downloader link read, so they need an APK named `ReelyRelay.apk`.
+
+One-time setup:
+
+1. **GitHub Pages**: Settings → Pages → Deploy from a branch → `main`, folder `/docs`. The QR codes in the app point at that site.
+2. **Repository secrets** (Settings → Secrets and variables → Actions): `TMDB_API_KEY`, `RELEASE_KEYSTORE_BASE64` (`base64 -w0 release.jks`), `RELEASE_STORE_PASSWORD`, `RELEASE_KEY_ALIAS`, `RELEASE_KEY_PASSWORD`.
+
+Then, for each release: bump `versionCode` and `versionName` in `app/build.gradle.kts`, and push a matching tag:
+
+```
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+The [release workflow](.github/workflows/release.yml) builds, signs and publishes it.
+
+If the repository moves or is renamed, the only place to update in the app is `Links.java`.
 
 ## Legal notice
 
-TVRelay's function is limited to detecting certain recommendations shown by the device's launcher, identifying the selected content, and opening its page in a third-party app you've already installed and configured yourself - it does not host, store, distribute, or provide any movies, series, streams, torrents, or other audiovisual content, and has no visibility into or control over what those third-party apps and their add-ons actually serve. You're responsible for your own use of them, including making sure that use complies with applicable law and their respective terms of service.
+ReelyRelay's function is limited to detecting certain recommendations shown by the device's launcher, identifying the selected content, and opening its page in Reely Player. It does not host, store, distribute, or provide any movies, series, streams, or other audiovisual content, and has no control over what you access through Reely Player. You are responsible for your own use, including making sure that use complies with applicable law.
 
-TVRelay is not affiliated with, sponsored by, authorized by, or endorsed by Google, Google TV, Amazon, Fire TV, Nuvio, Stremio, WuPlay, Wako, Plex, Jellyfin, Wholphin, or Moonfin. Google, Google TV, Android TV, Amazon, Fire TV, Nuvio, Stremio, WuPlay, Wako, Plex, Jellyfin, Wholphin, and Moonfin are trademarks or products of their respective owners.
+ReelyRelay is not affiliated with, sponsored by, authorized by, or endorsed by Google, Amazon or TMDB. Google TV, Android TV and Fire TV are trademarks of their respective owners.
 
 ## Credits
 
-TVRelay uses the **[TMDB](https://www.themoviedb.org/)** API by default to identify movies and shows. This product uses the TMDB API but is not endorsed or certified by TMDB.
-
-If you switch to **[TheTVDB](https://www.thetvdb.com/)** as an alternative provider (see [Metadata provider](#metadata-provider-tmdb--thetvdb) above): this product uses the TheTVDB API but is not endorsed or certified by TheTVDB.
+- **[TVRelay](https://github.com/hmartinez94/TVRelay)** by Hector Martinez - the project this is forked from, and where all of the detection work comes from.
+- **[TMDB](https://www.themoviedb.org/)** - this product uses the TMDB API but is not endorsed or certified by TMDB.
+- **[Plus Jakarta Sans](https://github.com/tokotype/PlusJakartaSans)** - the typeface, under the [SIL Open Font License](licenses/PlusJakartaSans-OFL.txt).
 
 ## License
 
-[PolyForm Noncommercial 1.0.0](LICENSE) - free to use, study, modify, and share for noncommercial purposes. Running a fork commercially (including soliciting donations on one) requires the licensor's permission.
+[PolyForm Noncommercial 1.0.0](LICENSE) - free to use, study, modify, and share for noncommercial purposes. This fork keeps the original license and its required notice unchanged.

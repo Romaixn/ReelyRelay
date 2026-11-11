@@ -14,7 +14,7 @@
     extractHeroTitle), which is what has been carrying it so far.
 
     To close the gap: click a Danish price/rating card and a Danish
-    subscription-gated card with "adb logcat -s TvRelayService:D", read
+    subscription-gated card with "adb logcat -s ReelyRelay:D", read
     the real content-desc out of the unconditional "Click event:" log
     line, and add the real markers here. Do not guess them.
 -->

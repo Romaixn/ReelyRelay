@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    French card-shape markers. See values/arrays.xml for what these are
+    and for the "a localized array replaces the default wholesale" rule
+    that is why the English entry is repeated here.
+
+    UNVERIFIED: "Sponsorisé" is the label Google uses for ads across its
+    French interfaces, but it has not been captured from a real
+    French-locale Google TV by this project. It only ever makes a banner be
+    ignored, so a wrong guess costs nothing - it just never matches.
+
+    KNOWN GAP, deliberate: no French equivalent of title_markers,
+    youtube_markers, the subscription phrases or
+    voice_search_detail_page_labels has been captured, so those are left
+    undefined and fall back to the English defaults, which will never match
+    French launcher text. French movie/show detection therefore rests on the
+    locale-agnostic structural fallbacks (android.view.View + a
+    comma-separated content-desc in isMovieOrShowCard, and the hero-banner
+    shape in extractHeroTitle) - the same ones that carry Danish.
+
+    To close the gap: on a French Google TV, click a price/rating card, a
+    subscription-gated card and an ad banner with
+    "adb logcat -s ReelyRelay:D" running, read the real content-desc out of
+    the "Click event:" log line, and add the real markers here. Do not
+    guess them.
+-->
+<resources>
+
+    <string-array name="sponsored_labels">
+        <item>Sponsorisé</item>
+        <item>Sponsored</item>
+    </string-array>
+
+</resources>

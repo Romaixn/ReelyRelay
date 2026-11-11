@@ -1,170 +1,178 @@
 <resources>
-    <string name="app_name">TVRelay</string>
+    <string name="app_name" translatable="false">ReelyRelay</string>
 
-    <string name="accessibility_service_description">Lets TVRelay detect when you select a movie or show recommendation on the launcher, so it can open it in the app you\'ve chosen in Settings instead.</string>
+    <string name="accessibility_service_description">Lets ReelyRelay notice when you select a movie or show recommendation on your TV\'s home screen, so it can offer to open it in Reely Player.</string>
 
-    <string name="disclosure_title">Before you start</string>
-    <string name="disclosure_description">TVRelay uses an Accessibility Service to detect when you click a movie or show recommendation on your TV\'s home screen. When it does, it sends only that title\'s text to a metadata service (TMDB by default, or TheTVDB - see Settings) to identify it, then shows a \"Watch now\" button for the app you\'ve chosen in Settings - tapping it (and only tapping it) opens that title there, so an accidental click never jumps you into another app on its own.\n\nNothing else is read, collected, or sent anywhere. Every other click (apps, menus, anything that isn\'t a content recommendation) is left completely alone.\n\nYou can turn the service off at any time from this app\'s Settings.</string>
-    <string name="disclosure_accept">I understand, continue</string>
+    <!-- First run: what the app does and what it reads (WelcomeStepFragment) -->
+    <string name="welcome_title">Open recommendations in Reely Player</string>
+    <string name="welcome_description">When you pick a movie or show on your TV\'s home screen, ReelyRelay offers to open it in Reely Player instead of the app it came from.\n\nTo do that it uses an Accessibility Service - only on the home screen, and only to read the title of the recommendation you select. That title is sent to TMDB to identify it. Nothing else is read, stored or sent, and every other click is left alone.</string>
+    <string name="welcome_accept">I understand, continue</string>
 
-    <string name="ocr_disclosure_title">About the screen-reading fallback</string>
-    <string name="ocr_disclosure_description">Some recommendation cards - especially the \"Top picks for you\" row - don\'t include any readable title in the click TVRelay receives. When this is on, TVRelay uses Android\'s screen-recording permission to capture what\'s on screen. Android will show a persistent \"recording/casting\" indicator.</string>
+    <!-- First run: the setup steps (Setup*StepFragment) -->
+    <string name="setup_step">Step %1$d of %2$d</string>
+    <string name="setup_continue">Continue</string>
+    <string name="setup_skip">Skip for now</string>
 
-    <string name="settings_description">Choose the app that opens when you pick a recommendation on your TV\'s home screen.</string>
+    <string name="setup_accessibility_title">Turn on ReelyRelay in Accessibility</string>
+    <string name="setup_accessibility_description">This is what lets ReelyRelay see which recommendation you pick. Open Accessibility, choose ReelyRelay and switch it on, then press Back to return here.</string>
+    <string name="setup_accessibility_open">Open Accessibility settings</string>
+    <string name="setup_accessibility_open_description">Find ReelyRelay in the list and switch it on</string>
 
-    <string name="settings_player_app">Player app</string>
+    <string name="setup_fire_tv_title">Turn on Fire TV mode</string>
+    <string name="setup_fire_tv_description">Fire TV\'s home screen doesn\'t tell apps which recommendation you picked, so ReelyRelay reads the title off the screen instead. That takes two permissions, both set up on the next screen.</string>
+    <string name="setup_fire_tv_open">Set up Fire TV mode</string>
+
+    <string name="setup_overlay_title">Show a \"Watch now\" button</string>
+    <string name="setup_overlay_description">Recommended. Before anything opens, ReelyRelay shows a button to confirm, so a stray click never sends you to Reely Player by accident. Without it, titles open straight away.</string>
+    <string name="setup_overlay_open">Allow display over other apps</string>
+    <string name="setup_overlay_open_description">Switch it on for ReelyRelay, then press Back</string>
+    <string name="setup_overlay_skip">Skip - open titles straight away</string>
+
+    <string name="setup_done_title">You\'re all set</string>
+    <string name="setup_done_title_incomplete">Almost there</string>
+    <string name="setup_done_finish">Done</string>
+    <string name="setup_done_settings">Open settings</string>
+
+    <!-- Home screen (HomeStepFragment): a status label, one sentence on what happens next or what is missing, then the settings -->
+    <string name="home_status_ready">Ready</string>
+    <string name="home_status_incomplete">Not ready yet</string>
+    <string name="home_ready">Pick a movie or show on your TV\'s home screen and ReelyRelay will offer to open it in Reely Player.</string>
+    <string name="home_ready_no_button">Pick a movie or show on your TV\'s home screen and it opens in Reely Player straight away.</string>
+    <string name="home_needs_reely">Reely Player isn\'t installed on this TV. Install it and ReelyRelay starts working - get it at %1$s.</string>
+    <string name="home_needs_accessibility">Turn on Accessibility, so ReelyRelay can see which recommendation you pick.</string>
+    <string name="home_needs_fire_tv">Turn on Fire TV mode, so ReelyRelay can read which recommendation you pick.</string>
+    <string name="home_needs_tmdb_key">This build has no TMDB key, so titles can\'t be identified. Add yours under More, then TMDB key.</string>
+
+    <string name="system_screen_unavailable">Couldn\'t open that settings screen on this device.</string>
+
+    <string name="settings_summary_enabled">On</string>
+    <string name="settings_summary_not_enabled">Off</string>
+    <string name="settings_summary_required">Off - needed for ReelyRelay to work</string>
 
     <string name="settings_section_detection">Title matching</string>
+    <string name="settings_group_detection_description">How ReelyRelay finds the right title</string>
     <string name="settings_show_chooser">Ask which year to open</string>
     <string name="settings_chooser_status_enabled">On - if several titles share a name, you pick the year</string>
     <string name="settings_chooser_status_disabled">Off - the newest year opens automatically</string>
     <string name="settings_hide_aka">Hide other-language matches</string>
-    <string name="settings_hide_aka_status_enabled">ENGLISH ONLY. On - results that only match another language\'s title are hidden</string>
-    <string name="settings_hide_aka_status_disabled">ENGLISH ONLY. Off - they are shown, but listed last</string>
-    <string name="settings_player_plex_description">Opens Plex\'s search - you type the title. Only finds titles in your library</string>
-    <string name="settings_player_jellyfin_description">Opens a search in Jellyfin. Set up your server below to open titles directly.</string>
-    <string name="settings_player_wholphin_description">Opens a search in Wholphin. Set up your server below to open titles directly.</string>
-    <string name="settings_player_moonfin_description">Only opens titles that are already on your Jellyfin server</string>
-    <string name="settings_player_wako_description">Needs TMDB as your title database - it won\'t work with TheTVDB</string>
+    <string name="settings_hide_aka_status_enabled">On - titles with a different original name are hidden. Only makes sense in English</string>
+    <string name="settings_hide_aka_status_disabled">Off - they are shown, listed last. Only worth turning on if your TV is in English</string>
     <string name="settings_ocr_fallback">Read titles from the screen</string>
     <string name="settings_ocr_status_enabled">On - reads a title off the screen when needed. Nothing is uploaded. A recording icon shows.</string>
     <string name="settings_ocr_status_disabled">Off - cards with no readable title are ignored</string>
 
+    <string name="ocr_disclosure_title">About reading titles from the screen</string>
+    <string name="ocr_disclosure_description">Some recommendations - especially the \"Top picks for you\" row - don\'t include a readable title in the click ReelyRelay receives. With this on, ReelyRelay uses Android\'s screen-recording permission to read the title off the screen, on the device. Nothing captured leaves it.\n\nAndroid shows its recording indicator the whole time this is on. ReelyRelay can\'t hide it.</string>
+    <string name="ocr_disclosure_accept">Turn it on</string>
+    <string name="ocr_notification_channel">Reading titles from the screen</string>
+    <string name="ocr_notification_title">ReelyRelay is reading the screen</string>
+    <string name="ocr_notification_text">Only to identify a title it couldn\'t detect any other way.</string>
+
     <!-- Fire TV mode (FireTvModeStepFragment / FireTvWatcherService) -->
     <string name="settings_fire_tv_mode">Fire TV mode</string>
-    <string name="settings_fire_tv_status_enabled">On - reads a title when you open a recommendation. Turn it on again after a restart.</string>
-    <string name="settings_fire_tv_status_disabled">Off - Fire TV recommendations are ignored</string>
+    <string name="settings_fire_tv_status_enabled">On - turn it on again after a restart</string>
     <string name="fire_tv_mode_title">Fire TV mode</string>
-    <string name="fire_tv_mode_description">Fire TV\'s home screen doesn\'t let TVRelay detect a clicked recommendation the way Google TV does. Instead, Fire TV mode notices when you open a recommendation and reads its title off the screen using on-device text recognition, then opens it in your chosen app.\n\nIt needs two one-time permissions: Usage access (to notice when you open a recommendation) and Screen recording (to read the title - nothing ever leaves the device). While it\'s active, Android shows a persistent recording indicator, which it can\'t hide.\n\nBecause screen-recording permission is cleared on a reboot, you\'ll need to activate Fire TV mode again after restarting the device.</string>
+    <string name="fire_tv_mode_description">ReelyRelay notices when you open a recommendation and reads its title off the screen, on the device. It needs two permissions: Usage access, to notice the recommendation, and Screen recording, to read the title.\n\nAndroid shows its recording indicator while this is on. The screen-recording permission is cleared by a restart, so turn Fire TV mode on again after one.</string>
     <string name="fire_tv_mode_usage_access">Grant usage access</string>
     <string name="fire_tv_mode_usage_access_granted">Granted</string>
-    <string name="fire_tv_mode_usage_access_not_granted">Not granted - open Apps > Special app access > Usage access > TVRelay and turn it on</string>
-    <string name="fire_tv_mode_activate">Activate Fire TV mode</string>
-    <string name="fire_tv_mode_reactivate">Re-activate Fire TV mode</string>
-    <string name="fire_tv_mode_active_description">On. If you restarted the TV, activate it again to allow screen recording.</string>
+    <string name="fire_tv_mode_usage_access_not_granted">Not granted - open Apps, Special app access, Usage access, ReelyRelay and turn it on</string>
+    <string name="fire_tv_mode_activate">Turn on Fire TV mode</string>
+    <string name="fire_tv_mode_reactivate">Turn on Fire TV mode again</string>
+    <string name="fire_tv_mode_active_description">On. After a restart, select this to allow screen recording again.</string>
     <string name="fire_tv_mode_inactive_description">Starts watching and asks for screen-recording permission</string>
     <string name="fire_tv_mode_deactivate">Turn off Fire TV mode</string>
-    <string name="fire_tv_mode_usage_required_toast">Grant usage access first, then activate.</string>
-    <string name="fire_tv_mode_activated_toast">Fire TV mode activated. Allow screen recording when Android asks.</string>
+    <string name="fire_tv_mode_usage_required_toast">Grant usage access first.</string>
+    <string name="fire_tv_mode_activated_toast">Fire TV mode is on. Allow screen recording when Android asks.</string>
     <string name="fire_tv_mode_usage_settings_unavailable">Couldn\'t open Usage access settings on this device.</string>
 
     <string name="settings_section_youtube">YouTube</string>
+    <string name="settings_group_youtube_description">Open YouTube recommendations in another YouTube app. Separate from Reely Player.</string>
     <string name="settings_smarttube_redirect">Open YouTube videos in another app</string>
     <string name="settings_smarttube_status_enabled">On - YouTube recommendations open a search in the app below</string>
     <string name="settings_smarttube_status_disabled">Off - YouTube recommendations open normally</string>
     <string name="settings_youtube_target">Open in</string>
 
     <string name="settings_section_overlay">Watch now button</string>
+    <string name="settings_group_overlay_description">The button that appears before Reely Player opens</string>
     <string name="settings_enable_overlay">Show the Watch now button</string>
-    <string name="settings_overlay_status_enabled">On - a button appears before another app opens</string>
-    <string name="settings_overlay_status_disabled">Off - apps open right away. Select to allow display over other apps</string>
+    <string name="settings_overlay_status_enabled">On - a button appears before Reely Player opens</string>
+    <string name="settings_overlay_status_disabled">Off - titles open straight away. Select to allow display over other apps</string>
     <string name="settings_overlay_reappear">Show again after hiding</string>
     <string name="settings_overlay_reappear_status_enabled">On - Back or a D-pad press hides the button, then it returns</string>
     <string name="settings_overlay_reappear_status_disabled">Off - hiding the button removes it for good</string>
-    <string name="settings_overlay_reappear_status_requires_permission">Turn on \"Show the Watch now button\" first</string>
+    <string name="settings_overlay_requires_permission">Turn on \"Show the Watch now button\" first</string>
+    <string name="settings_overlay_requires_reappear">Turn on \"Show again after hiding\" first</string>
     <string name="settings_overlay_long_press">Hold Select to confirm</string>
-    <string name="settings_overlay_long_press_status_enabled">On - hold Select to open the app. A short press hides the button</string>
-    <string name="settings_overlay_long_press_status_disabled">Off - one press opens the app</string>
-    <string name="settings_overlay_long_press_status_requires_permission">Turn on \"Show the Watch now button\" first</string>
-    <string name="settings_overlay_long_press_status_requires_reappear">Turn on \"Show again after hiding\" first</string>
+    <string name="settings_overlay_long_press_status_enabled">On - hold Select to open the title. A short press hides the button</string>
+    <string name="settings_overlay_long_press_status_disabled">Off - one press opens the title</string>
     <string name="settings_overlay_reappear_delay">Time until it returns</string>
     <string name="settings_overlay_reappear_delay_description">%1$s seconds - press Left or Right to change</string>
-    <string name="settings_overlay_reappear_delay_requires_permission">Turn on \"Show the Watch now button\" first</string>
-    <string name="settings_overlay_reappear_delay_requires_reappear">Turn on \"Show again after hiding\" first</string>
 
-    <!-- Main-menu status lines and per-group sub-screen descriptions -->
-    <string name="settings_summary_enabled">On</string>
-    <string name="settings_summary_not_enabled">Off</string>
-    <string name="settings_group_detection_description">How TVRelay finds the right title</string>
-    <string name="settings_group_overlay_description">The button that appears before another app opens</string>
-    <string name="settings_group_youtube_description">Open YouTube recommendations in a YouTube TV app</string>
-    <string name="settings_group_accessibility_description">TVRelay needs this to see what you click</string>
-    <string name="settings_group_more_description">Search by hand, choose the title database, and get help</string>
-
-    <string name="settings_section_accessibility">Accessibility &amp; Permissions</string>
+    <string name="settings_section_accessibility">Accessibility</string>
+    <string name="settings_group_accessibility_description">ReelyRelay needs this to see which recommendation you pick</string>
     <string name="settings_enable_accessibility">Turn on in Accessibility settings</string>
     <string name="settings_accessibility_status_enabled">On</string>
     <string name="settings_accessibility_status_disabled">Off - select to open Android\'s settings</string>
-    <string name="settings_restricted_settings_help">Accessibility won\'t turn on? Get help</string>
-    <string name="settings_restricted_settings_help_description">The switch keeps turning itself off - see the fix</string>
+    <string name="settings_restricted_settings_help">The switch turns itself off?</string>
+    <string name="settings_restricted_settings_help_description">Android blocks it for apps installed by hand - see the fix</string>
 
     <string name="settings_section_more">More</string>
+    <string name="settings_group_more_description">Your TMDB key, and about ReelyRelay</string>
     <string name="settings_update_available">Update available</string>
     <string name="settings_update_available_description">Version %1$s is ready to install</string>
     <string name="settings_search_manually">Search for a title</string>
-    <string name="settings_metadata_provider">Title database</string>
+    <string name="settings_search_manually_description">Type a title and open it in Reely Player</string>
+    <string name="settings_tmdb_key">TMDB key</string>
+    <string name="settings_tmdb_key_builtin">Using the built-in key</string>
+    <string name="settings_tmdb_key_own">Using your own key</string>
+    <string name="settings_tmdb_key_missing">Missing - titles can\'t be identified</string>
     <string name="settings_about">About &amp; help</string>
 
-    <!-- Only shown in Settings while Jellyfin, Wholphin, or Moonfin is the
-         selected player app - see SettingsStepFragment.buildActions()/
-         PlayerApp.usesJellyfinServer(). -->
-    <string name="settings_jellyfin_configure">Jellyfin server setup</string>
-    <string name="settings_jellyfin_configured_description">Server: %1$s</string>
-    <string name="settings_jellyfin_not_configured">Not set up - %1$s will only open a search</string>
-    <string name="settings_jellyfin_not_configured_no_search">Not set up - %1$s can\'t open titles until you set this up</string>
-
-    <string name="jellyfin_settings_title">Jellyfin server setup</string>
-    <string name="jellyfin_settings_description">Optional for Jellyfin and Wholphin. Required for Moonfin.</string>
-    <string name="jellyfin_lookup_enabled">Find in library first</string>
-    <string name="jellyfin_lookup_status_enabled">On - titles on your server open directly. Others open a search</string>
-    <string name="jellyfin_lookup_status_disabled">Off - always opens a search</string>
-    <string name="jellyfin_field_url">Jellyfin server URL</string>
-    <string name="jellyfin_field_api_key">Jellyfin API key</string>
-    <string name="jellyfin_pair_url">Send server URL from phone…</string>
-    <string name="jellyfin_pair_key">Send API key from phone…</string>
-    <string name="jellyfin_test_connection">Test connection</string>
-    <string name="jellyfin_test_success">Connected to %1$s</string>
-    <string name="jellyfin_test_failure">Couldn\'t connect: %1$s</string>
-    <string name="jellyfin_save_incomplete">Enter both the server URL and API key, or turn off \"Find in library first\"</string>
-
-    <string name="restricted_settings_help_title">Accessibility isn\'t turning on</string>
-    <string name="restricted_settings_help_intro">Android blocked Accessibility - not a bug. Here\'s the fix:</string>
-    <string name="restricted_settings_adb_fix">Run this over ADB (or atvTools):</string>
-    <string name="restricted_settings_adb_fix_command">adb shell appops set com.hmartinez94.tvrelay ACCESS_RESTRICTED_SETTINGS allow</string>
+    <string name="restricted_settings_help_title">Accessibility won\'t stay on</string>
+    <string name="restricted_settings_help_intro">Android blocks Accessibility for apps installed by hand. It\'s a safeguard, not a bug. If \"Allow restricted setting\" isn\'t in the app info screen, run this over ADB (the atvTools app can do it from a phone):</string>
+    <string name="restricted_settings_adb_fix_command" translatable="false">adb shell appops set %1$s ACCESS_RESTRICTED_SETTINGS allow</string>
+    <string name="restricted_settings_scan_more">Scan the code for the full walkthrough.</string>
+    <string name="restricted_settings_open_app_info">Open app info</string>
+    <string name="restricted_settings_open_app_info_description">Look for \"Allow restricted setting\" - not on every device</string>
     <string name="restricted_settings_retry_accessibility">Try Accessibility settings again</string>
-    <string name="restricted_settings_open_app_info">Try \"Allow restricted setting\" in app info</string>
-    <string name="restricted_settings_open_app_info_description">Not on every device</string>
-    <string name="restricted_settings_scan_more">Still not clear? Scan the code for more detail.</string>
 
     <string name="about_title">About &amp; help</string>
-    <string name="about_legal">TVRelay is an independent automation and redirection tool. It does not host, store, distribute, or provide movies, series, streams, torrents, or any other audiovisual content. It has no relationship with Nuvio, Stremio, WuPlay, Wako, Plex, Jellyfin, Wholphin, or Moonfin, or the origin or legality of any content you access through those apps - that depends entirely on which apps and add-ons you have installed and configured, under your own responsibility. TVRelay is not affiliated with, sponsored by, authorized by, or endorsed by Google, Nuvio, Stremio, WuPlay, Wako, Plex, Jellyfin, Wholphin, or Moonfin.</string>
-    <string name="about_tmdb_attribution">This product uses the TMDB API but is not endorsed or certified by TMDB. themoviedb.org</string>
-    <string name="about_tvdb_attribution">If you switch to TheTVDB as your metadata provider: this product uses the TheTVDB API but is not endorsed or certified by TheTVDB. thetvdb.com</string>
-    <!-- Order swapped in AboutStepFragment: TMDB is the default provider now, so its attribution reads first. -->
-    <string name="about_restricted_settings">If you sideloaded this app and the Accessibility toggle switches itself back off right after you enable it: that\'s Android\'s \"Restricted settings\" protection for apps not installed from an app store, not a bug. Many Google TV/Android TV devices don\'t have an \"Allow restricted setting\" option anywhere in Settings to clear this - if yours does, it\'s on this app\'s system App info screen, in the overflow/three-dot menu. If not (or you\'d rather skip hunting for it), connect over ADB - or use the atvTools app (free, Google Play) from your phone if you don\'t have a computer handy - and run:\n\nadb shell appops set com.hmartinez94.tvrelay ACCESS_RESTRICTED_SETTINGS allow\nadb shell settings put secure enabled_accessibility_services com.hmartinez94.tvrelay/com.hmartinez94.tvrelay.TvRelayAccessibilityService\nadb shell settings put secure accessibility_enabled 1\n\n(The last command replaces the whole list - separate services with a colon if you already use another one, like TalkBack.)</string>
+    <string name="about_description">ReelyRelay %1$s opens recommendations from your TV\'s home screen in Reely Player. It hosts and provides no content itself, and is not affiliated with or endorsed by Google or Amazon.</string>
+    <string name="about_license">Built on TVRelay, under the PolyForm Noncommercial License 1.0.0:</string>
+    <string name="about_license_url" translatable="false">polyformproject.org/licenses/noncommercial/1.0.0</string>
+    <!-- The upstream license requires this line to travel, verbatim, with every copy. -->
+    <string name="about_required_notice" translatable="false">Required Notice: Copyright Hector Martinez (https://github.com/hmartinez94/TVRelay)</string>
+    <string name="about_tmdb_attribution">This product uses the TMDB API but is not endorsed or certified by TMDB.</string>
     <string name="about_close">Close</string>
 
     <string name="watch_now_loading">Looking that up…</string>
     <string name="watch_now_confirm">Watch now in %1$s</string>
     <string name="watch_now_choose">Choose in %1$s</string>
-    <string name="watch_now_search">Search in %1$s</string>
+    <string name="open_failed">Couldn\'t open %1$s. Is it still installed?</string>
 
     <string name="search_title">Search for a title</string>
-    <string name="search_description">Some recommendation cards don\'t expose their title to accessibility tools, so TVRelay can\'t always detect them automatically. Type the title here instead - everything after that (looking it up, opening your chosen app) works exactly the same way.</string>
+    <string name="search_description">Some recommendations don\'t reveal their title, so ReelyRelay can\'t always catch them. Type the title here instead - it opens in Reely Player the same way.</string>
     <string name="search_field_title">Title</string>
     <string name="search_action">Search</string>
     <string name="search_searching">Searching…</string>
     <string name="search_not_found">Couldn\'t find that title</string>
 
-    <string name="metadata_provider_title">Title database</string>
-    <string name="metadata_provider_description">The service TVRelay asks to identify a title. TMDB is the default and works right away - TVRelay includes a shared key. If you like, enter your own free key below (get one at themoviedb.org, under Settings → API). TheTVDB is an alternative in case TMDB gets a title wrong.</string>
-    <string name="metadata_provider_tvdb">TheTVDB</string>
-    <string name="metadata_provider_tvdb_description">Alternative - no setup needed</string>
-    <string name="metadata_provider_tmdb">TMDB (default)</string>
-    <string name="metadata_provider_tmdb_description">Works right away - add your own key below only if you want to</string>
-    <string name="metadata_tmdb_key_field">TMDB API key</string>
-    <string name="metadata_tmdb_pair_phone">Send key from phone…</string>
-    <string name="metadata_tmdb_pair_phone_description">Scan a QR code and type it on your phone instead of here</string>
-    <string name="metadata_tmdb_test_key">Test key</string>
-    <string name="metadata_tmdb_test_success">TMDB key works</string>
-    <string name="metadata_tmdb_test_failure">That key didn\'t work - check it was copied correctly</string>
-    <string name="metadata_provider_save">Save</string>
-    <string name="metadata_provider_saved">Saved</string>
+    <string name="tmdb_key_title">TMDB key</string>
+    <string name="tmdb_key_description">ReelyRelay asks TMDB which movie or show a title is. It works straight away with a built-in key. If lookups ever stop working, use your own free key instead - get one at themoviedb.org, under Settings, then API.</string>
+    <string name="tmdb_key_description_missing">ReelyRelay asks TMDB which movie or show a title is, and this build doesn\'t include a key. Enter your own free one - get it at themoviedb.org, under Settings, then API.</string>
+    <string name="tmdb_key_field">Your TMDB key</string>
+    <string name="tmdb_key_pair_phone">Send key from phone…</string>
+    <string name="tmdb_key_pair_phone_description">Scan a QR code and paste it on your phone instead</string>
+    <string name="tmdb_key_test">Test key</string>
+    <string name="tmdb_key_test_success">TMDB key works</string>
+    <string name="tmdb_key_test_failure">That key didn\'t work - check it was copied correctly</string>
+    <string name="tmdb_key_save">Save</string>
+    <string name="tmdb_key_saved">Saved</string>
 
     <string name="pairing_title">Send from your phone</string>
-    <string name="pairing_description">Scan this with your phone\'s camera, then type or paste the value on the page that opens and tap Send. It\'ll fill in here automatically - no need to type it with the remote.\n\n%1$s</string>
-    <string name="pairing_auto_close_note">Closes automatically once the value is received.</string>
-    <string name="pairing_network_warning">Didn\'t work? Your network may be blocking this connection</string>
+    <string name="pairing_description">Scan this with your phone\'s camera, paste the key on the page that opens and tap Send. It fills in here on its own.</string>
+    <string name="pairing_auto_close_note">Closes automatically once the key arrives.</string>
+    <string name="pairing_network_warning">Nothing happening? Your network may be blocking ntfy.sh, the relay this uses.</string>
     <string name="pairing_cancel">Cancel</string>
     <string name="pairing_received">Received</string>
     <string name="pairing_timed_out">Nothing received - scan the code again to retry</string>
@@ -178,20 +186,20 @@
     <string name="chooser_aka">aka %1$s</string>
 
     <string name="update_title">Update available</string>
-    <string name="update_description">TVRelay %1$s is available - you have %2$s. Downloading and installing happens entirely on this device, no phone needed.</string>
+    <string name="update_description">ReelyRelay %1$s is available - you have %2$s. It downloads and installs on this device, no phone needed.</string>
     <string name="update_download">Download and install</string>
     <string name="update_downloading">Downloading… %1$d%%</string>
-    <string name="update_permission_needed">Selecting this first asks Android for permission to install apps from TVRelay - a one-time system screen</string>
+    <string name="update_permission_needed">Selecting this first asks Android for permission to install apps from ReelyRelay - a one-time system screen</string>
     <string name="update_download_failed">Download failed - check your connection and try again</string>
     <string name="update_cancel">Cancel</string>
-    <string name="update_up_to_date">TVRelay is up to date - you have the latest version (%1$s)</string>
-    <string name="update_available_toast">TVRelay update available - version %1$s is ready to install</string>
+    <string name="update_up_to_date">ReelyRelay is up to date (%1$s)</string>
+    <string name="update_available_toast">ReelyRelay %1$s is ready to install</string>
 
     <string name="update_warning_title">Before you update</string>
     <string name="update_warning_prefix">Installing this update through the app</string>
-    <string name="update_warning_highlight">will re-trigger Android\'s Restricted settings block</string>
-    <string name="update_warning_suffix">if Accessibility is currently enabled - it\'ll switch itself back off, and you\'ll need to redo the ADB (or atvTools) fix afterward. If you\'d rather avoid that, cancel here and sideload the update yourself instead.</string>
+    <string name="update_warning_highlight">will switch Accessibility back off</string>
+    <string name="update_warning_suffix">if it is on - Android applies its block for hand-installed apps again, and you\'ll need to redo the fix afterwards. To avoid that, cancel here and install the update over ADB instead.</string>
     <string name="update_warning_continue">Continue with the update</string>
-    <string name="update_warning_sideload">Cancel - I\'ll sideload it myself</string>
-    <string name="update_warning_sideload_toast">Download the new APK from the Releases page and install it via ADB (or Downloader/Send Files to TV) instead - see the README\'s Installation section</string>
+    <string name="update_warning_sideload">Cancel - I\'ll install it myself</string>
+    <string name="update_warning_sideload_toast">Download the new APK from the Releases page and install it over ADB - see Installation in the README</string>
 </resources>

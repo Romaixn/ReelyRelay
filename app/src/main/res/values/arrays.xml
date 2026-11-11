@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Locale-dependent launcher card-shape markers, read by
-    TvRelayAccessibilityService (isMovieOrShowCard / isYouTubeCard /
+    RelayAccessibilityService (isMovieOrShowCard / isYouTubeCard /
     extractHeroTitle / handleVoiceSearchDetailPage) and OcrTextCleaner.
 
     These are matched against text the LAUNCHER renders, not against
-    TVRelay's own UI, so they are always resolved through
+    ReelyRelay's own UI, so they are always resolved through
     LauncherLocale.systemResources() (the real system locale) rather than
     the app's own Resources. See that class for why.
 

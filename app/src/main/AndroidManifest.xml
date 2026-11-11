@@ -55,19 +55,14 @@
 
     <!-- Android 11+ package visibility: PlayerLauncher targets these apps by
          package name with an explicit Intent. Without declaring them here,
-         the targeted intent silently fails to resolve on API 30+. -->
+         the targeted intent silently fails to resolve on API 30+ (and
+         ReelyPlayer.isInstalled() would always say no). -->
     <queries>
-        <package android:name="com.nuvio.app" />
-        <package android:name="com.nuvio.tv" />
-        <package android:name="com.nuvio.tv.lite" />
-        <package android:name="com.stremio.one" />
-        <package android:name="app.wuplay.androidtv" />
-        <package android:name="app.wako" />
-        <package android:name="com.plexapp.android" />
-        <package android:name="org.jellyfin.androidtv" />
-        <package android:name="com.github.damontecres.wholphin" />
-        <package android:name="org.moonfin.androidtv" />
-        <package android:name="org.moonfin.androidtv.beta" />
+        <!-- Reely Player: the release build, and its side-by-side dev build -
+             keep in step with ReelyPlayer.PACKAGES. -->
+        <package android:name="com.reely.reely" />
+        <package android:name="com.reely.reely.debug" />
+        <!-- The optional YouTube redirect's two targets. -->
         <package android:name="org.smarttube.stable" />
         <package android:name="org.smarttube.beta" />
         <package android:name="io.gh.reisxd.tizentube.cobalt" />
@@ -89,16 +84,12 @@
         <package android:name="com.amazon.tv.settings.v2" />
     </queries>
 
-    <!-- See res/xml/network_security_config.xml for why cleartext is
-         allowed - solely to reach a user-entered Jellyfin server URL, not
-         any first-party endpoint (all still hardcoded https://). -->
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:networkSecurityConfig="@xml/network_security_config"
         android:supportsRtl="true"
-        android:theme="@style/Theme.TVRelay">
+        android:theme="@style/Theme.ReelyRelay">
 
         <activity
             android:name=".MainActivity"
@@ -172,7 +163,7 @@
         </provider>
 
         <service
-            android:name=".TvRelayAccessibilityService"
+            android:name=".RelayAccessibilityService"
             android:exported="false"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>

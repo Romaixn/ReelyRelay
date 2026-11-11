@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TVRelay"
+rootProject.name = "ReelyRelay"
 include(":app")

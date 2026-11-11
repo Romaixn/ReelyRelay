@@ -1,8 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Reely's dark palette (reely-player: lib/core/theme/reely_colors.dart),
+    so ReelyRelay reads as part of the same family. Neutrals are tinted
+    warm; the accent is a warm off-white used for exactly one thing here -
+    the "Watch now" button and the focused card of the match chooser.
+-->
 <resources>
-    <color name="background_gradient_start">#000000</color>
-    <color name="background_gradient_end">#DDDDDD</color>
-    <color name="fastlane_background">#0096a6</color>
-    <color name="search_opaque">#ffaa3f</color>
-    <color name="selected_background">#ffaa3f</color>
-    <color name="default_background">#3d3d3d</color>
+    <!-- Surfaces, deepest first -->
+    <color name="bg_sunken">#12100E</color>
+    <color name="bg_deep">#1A1815</color>
+    <color name="bg_base">#221F1C</color>
+    <color name="surface_1">#2A2724</color>
+    <color name="surface_2">#34302D</color>
+    <color name="surface_3">#3F3B37</color>
+    <color name="border_strong">#534F4A</color>
+
+    <!-- Text, quietest first -->
+    <color name="text_dim">#857C75</color>
+    <color name="text_muted">#B1A8A1</color>
+    <color name="text_body">#DFD7D0</color>
+    <color name="text_strong">#F5EFE9</color>
+
+    <!-- Accent, and what sits on top of it -->
+    <color name="accent">#F2EBE0</color>
+    <color name="accent_pressed">#E3DAC8</color>
+    <color name="on_accent">#1D1A17</color>
+    <color name="on_accent_muted">#5B5042</color>
+
+    <!-- Status -->
+    <color name="positive">#6EBA85</color>
+    <color name="warning">#E0A672</color>
+
+    <!-- Reely's brand blue: the launcher icon and banner only -->
+    <color name="brand_blue">#254EBD</color>
+    <color name="ic_launcher_background">#254EBD</color>
 </resources>

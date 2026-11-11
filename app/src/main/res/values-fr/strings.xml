@@ -1,0 +1,195 @@
+<resources>
+    <string name="accessibility_service_description">Permet à ReelyRelay de repérer la recommandation de film ou de série que vous sélectionnez sur l\'écran d\'accueil de votre TV, pour proposer de l\'ouvrir dans Reely Player.</string>
+
+    <string name="welcome_title">Ouvrez les recommandations dans Reely Player</string>
+    <string name="welcome_description">Quand vous choisissez un film ou une série sur l\'écran d\'accueil de votre TV, ReelyRelay propose de l\'ouvrir dans Reely Player plutôt que dans l\'appli d\'origine.\n\nPour cela, il utilise un service d\'accessibilité - uniquement sur l\'écran d\'accueil, et uniquement pour lire le titre de la recommandation sélectionnée. Ce titre est envoyé à TMDB pour l\'identifier. Rien d\'autre n\'est lu, conservé ni envoyé, et tous les autres clics sont laissés tels quels.</string>
+    <string name="welcome_accept">J\'ai compris, continuer</string>
+
+    <string name="setup_step">Étape %1$d sur %2$d</string>
+    <string name="setup_continue">Continuer</string>
+    <string name="setup_skip">Passer pour l\'instant</string>
+
+    <string name="setup_accessibility_title">Activez ReelyRelay dans Accessibilité</string>
+    <string name="setup_accessibility_description">C\'est ce qui permet à ReelyRelay de voir quelle recommandation vous choisissez. Ouvrez Accessibilité, sélectionnez ReelyRelay et activez-le, puis appuyez sur Retour pour revenir ici.</string>
+    <string name="setup_accessibility_open">Ouvrir les réglages d\'accessibilité</string>
+    <string name="setup_accessibility_open_description">Trouvez ReelyRelay dans la liste et activez-le</string>
+
+    <string name="setup_fire_tv_title">Activez le mode Fire TV</string>
+    <string name="setup_fire_tv_description">L\'écran d\'accueil de Fire TV n\'indique pas aux applis quelle recommandation vous avez choisie\u00A0: ReelyRelay lit donc le titre à l\'écran. Il faut pour cela deux autorisations, à accorder sur l\'écran suivant.</string>
+    <string name="setup_fire_tv_open">Configurer le mode Fire TV</string>
+
+    <string name="setup_overlay_title">Afficher un bouton «\u00A0Regarder\u00A0»</string>
+    <string name="setup_overlay_description">Recommandé. Avant d\'ouvrir quoi que ce soit, ReelyRelay affiche un bouton de confirmation\u00A0: un clic involontaire ne vous envoie jamais dans Reely Player par accident. Sans lui, les titres s\'ouvrent directement.</string>
+    <string name="setup_overlay_open">Autoriser l\'affichage par-dessus les autres applis</string>
+    <string name="setup_overlay_open_description">Activez l\'option pour ReelyRelay, puis appuyez sur Retour</string>
+    <string name="setup_overlay_skip">Passer - ouvrir les titres directement</string>
+
+    <string name="setup_done_title">Tout est prêt</string>
+    <string name="setup_done_title_incomplete">Presque terminé</string>
+    <string name="setup_done_finish">Terminer</string>
+    <string name="setup_done_settings">Ouvrir les réglages</string>
+
+    <string name="home_status_ready">Prêt</string>
+    <string name="home_status_incomplete">Pas encore prêt</string>
+    <string name="home_ready">Choisissez un film ou une série sur l\'écran d\'accueil de votre TV\u00A0: ReelyRelay proposera de l\'ouvrir dans Reely Player.</string>
+    <string name="home_ready_no_button">Choisissez un film ou une série sur l\'écran d\'accueil de votre TV\u00A0: il s\'ouvre directement dans Reely Player.</string>
+    <string name="home_needs_reely">Reely Player n\'est pas installé sur cette TV. Installez-le et ReelyRelay se mettra à fonctionner - disponible sur %1$s.</string>
+    <string name="home_needs_accessibility">Activez Accessibilité pour que ReelyRelay voie quelle recommandation vous choisissez.</string>
+    <string name="home_needs_fire_tv">Activez le mode Fire TV pour que ReelyRelay lise quelle recommandation vous choisissez.</string>
+    <string name="home_needs_tmdb_key">Cette version n\'inclut pas de clé TMDB\u00A0: les titres ne peuvent pas être identifiés. Ajoutez la vôtre dans Plus, puis Clé TMDB.</string>
+
+    <string name="system_screen_unavailable">Impossible d\'ouvrir cet écran de réglages sur cet appareil.</string>
+
+    <string name="settings_summary_enabled">Activé</string>
+    <string name="settings_summary_not_enabled">Désactivé</string>
+    <string name="settings_summary_required">Désactivé - nécessaire au fonctionnement de ReelyRelay</string>
+
+    <string name="settings_section_detection">Correspondance des titres</string>
+    <string name="settings_group_detection_description">Comment ReelyRelay trouve le bon titre</string>
+    <string name="settings_show_chooser">Demander quelle année ouvrir</string>
+    <string name="settings_chooser_status_enabled">Activé - si plusieurs titres portent le même nom, vous choisissez l\'année</string>
+    <string name="settings_chooser_status_disabled">Désactivé - l\'année la plus récente s\'ouvre automatiquement</string>
+    <string name="settings_hide_aka">Masquer les correspondances d\'une autre langue</string>
+    <string name="settings_hide_aka_status_enabled">Activé - les titres dont le nom d\'origine diffère sont masqués. N\'a de sens qu\'en anglais</string>
+    <string name="settings_hide_aka_status_disabled">Désactivé - ils sont affichés, en fin de liste. À n\'activer que si votre TV est en anglais</string>
+    <string name="settings_ocr_fallback">Lire les titres à l\'écran</string>
+    <string name="settings_ocr_status_enabled">Activé - lit un titre à l\'écran si besoin. Rien n\'est envoyé. Une icône d\'enregistrement s\'affiche.</string>
+    <string name="settings_ocr_status_disabled">Désactivé - les cartes sans titre lisible sont ignorées</string>
+
+    <string name="ocr_disclosure_title">À propos de la lecture des titres à l\'écran</string>
+    <string name="ocr_disclosure_description">Certaines recommandations - surtout celles de la rangée de suggestions personnalisées - n\'incluent aucun titre lisible dans le clic que reçoit ReelyRelay. Une fois cette option activée, ReelyRelay utilise l\'autorisation d\'enregistrement d\'écran d\'Android pour lire le titre à l\'écran, sur l\'appareil. Rien de ce qui est capturé ne le quitte.\n\nAndroid affiche son indicateur d\'enregistrement tant que l\'option est active. ReelyRelay ne peut pas le masquer.</string>
+    <string name="ocr_disclosure_accept">Activer</string>
+    <string name="ocr_notification_channel">Lecture des titres à l\'écran</string>
+    <string name="ocr_notification_title">ReelyRelay lit l\'écran</string>
+    <string name="ocr_notification_text">Uniquement pour identifier un titre impossible à détecter autrement.</string>
+
+    <string name="settings_fire_tv_mode">Mode Fire TV</string>
+    <string name="settings_fire_tv_status_enabled">Activé - à réactiver après un redémarrage</string>
+    <string name="fire_tv_mode_title">Mode Fire TV</string>
+    <string name="fire_tv_mode_description">ReelyRelay repère l\'ouverture d\'une recommandation et lit son titre à l\'écran, sur l\'appareil. Il lui faut deux autorisations\u00A0: Accès aux données d\'utilisation, pour repérer la recommandation, et Enregistrement de l\'écran, pour lire le titre.\n\nAndroid affiche son indicateur d\'enregistrement tant que le mode est actif. L\'autorisation d\'enregistrement est effacée au redémarrage\u00A0: réactivez le mode Fire TV après chaque redémarrage.</string>
+    <string name="fire_tv_mode_usage_access">Accorder l\'accès aux données d\'utilisation</string>
+    <string name="fire_tv_mode_usage_access_granted">Accordé</string>
+    <string name="fire_tv_mode_usage_access_not_granted">Non accordé - ouvrez Applications, Accès spécial des applications, Accès aux données d\'utilisation, ReelyRelay, puis activez-le</string>
+    <string name="fire_tv_mode_activate">Activer le mode Fire TV</string>
+    <string name="fire_tv_mode_reactivate">Réactiver le mode Fire TV</string>
+    <string name="fire_tv_mode_active_description">Activé. Après un redémarrage, sélectionnez cette ligne pour autoriser de nouveau l\'enregistrement de l\'écran.</string>
+    <string name="fire_tv_mode_inactive_description">Lance la surveillance et demande l\'autorisation d\'enregistrer l\'écran</string>
+    <string name="fire_tv_mode_deactivate">Désactiver le mode Fire TV</string>
+    <string name="fire_tv_mode_usage_required_toast">Accordez d\'abord l\'accès aux données d\'utilisation.</string>
+    <string name="fire_tv_mode_activated_toast">Mode Fire TV activé. Autorisez l\'enregistrement de l\'écran quand Android le demande.</string>
+    <string name="fire_tv_mode_usage_settings_unavailable">Impossible d\'ouvrir les réglages d\'accès aux données d\'utilisation sur cet appareil.</string>
+
+    <string name="settings_section_youtube">YouTube</string>
+    <string name="settings_group_youtube_description">Ouvrir les recommandations YouTube dans une autre appli YouTube. Indépendant de Reely Player.</string>
+    <string name="settings_smarttube_redirect">Ouvrir les vidéos YouTube dans une autre appli</string>
+    <string name="settings_smarttube_status_enabled">Activé - les recommandations YouTube ouvrent une recherche dans l\'appli ci-dessous</string>
+    <string name="settings_smarttube_status_disabled">Désactivé - les recommandations YouTube s\'ouvrent normalement</string>
+    <string name="settings_youtube_target">Ouvrir dans</string>
+
+    <string name="settings_section_overlay">Bouton Regarder</string>
+    <string name="settings_group_overlay_description">Le bouton qui s\'affiche avant l\'ouverture de Reely Player</string>
+    <string name="settings_enable_overlay">Afficher le bouton Regarder</string>
+    <string name="settings_overlay_status_enabled">Activé - un bouton s\'affiche avant l\'ouverture de Reely Player</string>
+    <string name="settings_overlay_status_disabled">Désactivé - les titres s\'ouvrent directement. Sélectionnez pour autoriser l\'affichage par-dessus les autres applis</string>
+    <string name="settings_overlay_reappear">Réafficher après masquage</string>
+    <string name="settings_overlay_reappear_status_enabled">Activé - Retour ou une flèche masque le bouton, puis il revient</string>
+    <string name="settings_overlay_reappear_status_disabled">Désactivé - masquer le bouton le retire définitivement</string>
+    <string name="settings_overlay_requires_permission">Activez d\'abord «\u00A0Afficher le bouton Regarder\u00A0»</string>
+    <string name="settings_overlay_requires_reappear">Activez d\'abord «\u00A0Réafficher après masquage\u00A0»</string>
+    <string name="settings_overlay_long_press">Maintenir OK pour confirmer</string>
+    <string name="settings_overlay_long_press_status_enabled">Activé - maintenez OK pour ouvrir le titre. Un appui court masque le bouton</string>
+    <string name="settings_overlay_long_press_status_disabled">Désactivé - un seul appui ouvre le titre</string>
+    <string name="settings_overlay_reappear_delay">Délai avant réaffichage</string>
+    <string name="settings_overlay_reappear_delay_description">%1$s secondes - Gauche ou Droite pour modifier</string>
+
+    <string name="settings_section_accessibility">Accessibilité</string>
+    <string name="settings_group_accessibility_description">ReelyRelay en a besoin pour voir quelle recommandation vous choisissez</string>
+    <string name="settings_enable_accessibility">Activer dans les réglages d\'accessibilité</string>
+    <string name="settings_accessibility_status_enabled">Activé</string>
+    <string name="settings_accessibility_status_disabled">Désactivé - sélectionnez pour ouvrir les réglages d\'Android</string>
+    <string name="settings_restricted_settings_help">L\'interrupteur se désactive tout seul\u00A0?</string>
+    <string name="settings_restricted_settings_help_description">Android le bloque pour les applis installées à la main - voir la solution</string>
+
+    <string name="settings_section_more">Plus</string>
+    <string name="settings_group_more_description">Votre clé TMDB, et à propos de ReelyRelay</string>
+    <string name="settings_update_available">Mise à jour disponible</string>
+    <string name="settings_update_available_description">La version %1$s est prête à être installée</string>
+    <string name="settings_search_manually">Rechercher un titre</string>
+    <string name="settings_search_manually_description">Saisissez un titre pour l\'ouvrir dans Reely Player</string>
+    <string name="settings_tmdb_key">Clé TMDB</string>
+    <string name="settings_tmdb_key_builtin">Clé intégrée utilisée</string>
+    <string name="settings_tmdb_key_own">Votre propre clé est utilisée</string>
+    <string name="settings_tmdb_key_missing">Absente - les titres ne peuvent pas être identifiés</string>
+    <string name="settings_about">À propos et aide</string>
+
+    <string name="restricted_settings_help_title">Accessibilité se désactive</string>
+    <string name="restricted_settings_help_intro">Android bloque Accessibilité pour les applis installées à la main. C\'est une protection, pas un bug. Si «\u00A0Autoriser le paramètre restreint\u00A0» n\'apparaît pas dans les infos de l\'appli, lancez ceci via ADB (l\'appli atvTools le fait depuis un téléphone)\u00A0:</string>
+    <string name="restricted_settings_scan_more">Scannez le code pour le guide complet.</string>
+    <string name="restricted_settings_open_app_info">Ouvrir les infos de l\'appli</string>
+    <string name="restricted_settings_open_app_info_description">Cherchez «\u00A0Autoriser le paramètre restreint\u00A0» - pas sur tous les appareils</string>
+    <string name="restricted_settings_retry_accessibility">Réessayer les réglages d\'accessibilité</string>
+
+    <string name="about_title">À propos et aide</string>
+    <string name="about_description">ReelyRelay %1$s ouvre dans Reely Player les recommandations de l\'écran d\'accueil de votre TV. Il n\'héberge et ne fournit aucun contenu, et n\'est ni affilié à Google ou Amazon, ni approuvé par eux.</string>
+    <string name="about_license">Basé sur TVRelay, sous licence PolyForm Noncommercial 1.0.0\u00A0:</string>
+    <string name="about_tmdb_attribution">Ce produit utilise l\'API TMDB mais n\'est ni approuvé ni certifié par TMDB.</string>
+    <string name="about_close">Fermer</string>
+
+    <string name="watch_now_loading">Recherche en cours…</string>
+    <string name="watch_now_confirm">Regarder dans %1$s</string>
+    <string name="watch_now_choose">Choisir dans %1$s</string>
+    <string name="open_failed">Impossible d\'ouvrir %1$s. Est-il toujours installé\u00A0?</string>
+
+    <string name="search_title">Rechercher un titre</string>
+    <string name="search_description">Certaines recommandations ne révèlent pas leur titre\u00A0: ReelyRelay ne peut donc pas toujours les repérer. Saisissez le titre ici - il s\'ouvre dans Reely Player de la même façon.</string>
+    <string name="search_field_title">Titre</string>
+    <string name="search_action">Rechercher</string>
+    <string name="search_searching">Recherche…</string>
+    <string name="search_not_found">Titre introuvable</string>
+
+    <string name="tmdb_key_title">Clé TMDB</string>
+    <string name="tmdb_key_description">ReelyRelay demande à TMDB à quel film ou à quelle série correspond un titre. Cela fonctionne d\'emblée avec une clé intégrée. Si les recherches cessent de fonctionner, utilisez votre propre clé gratuite - à obtenir sur themoviedb.org, dans Paramètres, puis API.</string>
+    <string name="tmdb_key_description_missing">ReelyRelay demande à TMDB à quel film ou à quelle série correspond un titre, et cette version n\'inclut pas de clé. Saisissez la vôtre, gratuite - à obtenir sur themoviedb.org, dans Paramètres, puis API.</string>
+    <string name="tmdb_key_field">Votre clé TMDB</string>
+    <string name="tmdb_key_pair_phone">Envoyer la clé depuis un téléphone…</string>
+    <string name="tmdb_key_pair_phone_description">Scannez un QR code et collez-la sur votre téléphone</string>
+    <string name="tmdb_key_test">Tester la clé</string>
+    <string name="tmdb_key_test_success">La clé TMDB fonctionne</string>
+    <string name="tmdb_key_test_failure">Cette clé ne fonctionne pas - vérifiez qu\'elle a été copiée correctement</string>
+    <string name="tmdb_key_save">Enregistrer</string>
+    <string name="tmdb_key_saved">Enregistré</string>
+
+    <string name="pairing_title">Envoyer depuis votre téléphone</string>
+    <string name="pairing_description">Scannez ce code avec l\'appareil photo de votre téléphone, collez la clé sur la page qui s\'ouvre et touchez Envoyer. Elle se remplit ici toute seule.</string>
+    <string name="pairing_auto_close_note">Se ferme automatiquement dès que la clé arrive.</string>
+    <string name="pairing_network_warning">Rien ne se passe\u00A0? Votre réseau bloque peut-être ntfy.sh, le relais utilisé ici.</string>
+    <string name="pairing_cancel">Annuler</string>
+    <string name="pairing_received">Reçu</string>
+    <string name="pairing_timed_out">Rien reçu - scannez de nouveau le code pour réessayer</string>
+
+    <string name="chooser_heading">Quel «\u00A0%1$s\u00A0»\u00A0?</string>
+    <string name="chooser_description">Plusieurs titres correspondent exactement. Le plus probable est en premier.</string>
+    <string name="chooser_cancel">Annuler</string>
+    <string name="chooser_unknown_year">Année inconnue</string>
+    <string name="chooser_type_movie">Film</string>
+    <string name="chooser_type_series">Série</string>
+    <string name="chooser_aka">alias %1$s</string>
+
+    <string name="update_title">Mise à jour disponible</string>
+    <string name="update_description">ReelyRelay %1$s est disponible - vous avez la %2$s. Le téléchargement et l\'installation se font sur cet appareil, sans téléphone.</string>
+    <string name="update_download">Télécharger et installer</string>
+    <string name="update_downloading">Téléchargement… %1$d\u00A0%%</string>
+    <string name="update_permission_needed">Cette ligne demande d\'abord à Android l\'autorisation d\'installer des applis depuis ReelyRelay - un écran système, une seule fois</string>
+    <string name="update_download_failed">Échec du téléchargement - vérifiez votre connexion et réessayez</string>
+    <string name="update_cancel">Annuler</string>
+    <string name="update_up_to_date">ReelyRelay est à jour (%1$s)</string>
+    <string name="update_available_toast">ReelyRelay %1$s est prêt à être installé</string>
+
+    <string name="update_warning_title">Avant de mettre à jour</string>
+    <string name="update_warning_prefix">Installer cette mise à jour depuis l\'appli</string>
+    <string name="update_warning_highlight">désactivera de nouveau Accessibilité</string>
+    <string name="update_warning_suffix">si elle est activée - Android réapplique son blocage des applis installées à la main, et il faudra refaire la manipulation ensuite. Pour l\'éviter, annulez ici et installez la mise à jour via ADB.</string>
+    <string name="update_warning_continue">Continuer la mise à jour</string>
+    <string name="update_warning_sideload">Annuler - je l\'installerai moi-même</string>
+    <string name="update_warning_sideload_toast">Téléchargez le nouvel APK depuis la page Releases et installez-le via ADB - voir Installation dans le README</string>
+</resources>

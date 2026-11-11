@@ -1,4 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.TVRelay" parent="@style/Theme.Leanback" />
+    <style name="Theme.ReelyRelay" parent="@style/Theme.Leanback">
+        <item name="android:windowBackground">@color/bg_base</item>
+        <item name="android:colorBackground">@color/bg_base</item>
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:colorControlActivated">@color/accent</item>
+        <item name="android:colorControlNormal">@color/text_dim</item>
+        <item name="android:colorControlHighlight">@color/surface_3</item>
+        <item name="android:textColorPrimary">@color/text_strong</item>
+        <item name="android:textColorSecondary">@color/text_muted</item>
+        <item name="guidedStepTheme">@style/Theme.ReelyRelay.GuidedStep</item>
+    </style>
+
+    <!--
+        Every screen in the app is a leanback GuidedStep: guidance on the
+        left, a list of actions on the right. Leanback applies this theme on
+        top of the activity's for those fragments.
+    -->
+    <style name="Theme.ReelyRelay.GuidedStep" parent="@style/Theme.Leanback.GuidedStep">
+        <item name="android:colorAccent">@color/accent</item>
+        <item name="android:colorControlActivated">@color/accent</item>
+        <item name="android:colorControlNormal">@color/text_dim</item>
+        <item name="android:colorControlHighlight">@color/surface_3</item>
+
+        <!-- Left (guidance) panel, right (actions) panel, and the dropdown a row can open -->
+        <item name="guidedStepBackground">@color/bg_base</item>
+        <item name="guidedActionsBackground">@color/bg_deep</item>
+        <item name="guidedActionsBackgroundDark">@color/bg_sunken</item>
+
+        <item name="guidedActionItemContainerStyle">@style/Widget.ReelyRelay.ActionItemContainer</item>
+        <item name="guidedActionItemTitleStyle">@style/Widget.ReelyRelay.ActionItemTitle</item>
+        <item name="guidedActionItemDescriptionStyle">@style/Widget.ReelyRelay.ActionItemDescription</item>
+        <!-- Despite the names, these cap how many lines a row's title and
+             description may wrap to (leanback's defaults: 1 and 2). Rows
+             stay as short as their text; these only stop longer labels -
+             a translation, a status line - from being cut off. -->
+        <item name="guidedActionTitleMinLines">@integer/action_title_max_lines</item>
+        <item name="guidedActionDescriptionMinLines">@integer/action_description_max_lines</item>
+    </style>
+
+    <!-- Namespace root: dotted style names inherit from their prefix. -->
+    <style name="Widget.ReelyRelay" parent="" />
+
+    <!--
+        The focus highlight is a background under the row's text, not
+        leanback's default translucent foreground ripple drawn over it, so
+        the text keeps its full contrast on the focused row.
+    -->
+    <style name="Widget.ReelyRelay.ActionItemContainer" parent="@style/Widget.Leanback.GuidedActionItemContainerStyle">
+        <item name="android:foreground">@null</item>
+        <item name="android:background">@drawable/action_item_background</item>
+        <item name="android:paddingStart">20dp</item>
+        <item name="android:paddingEnd">20dp</item>
+        <item name="android:paddingTop">14dp</item>
+        <item name="android:paddingBottom">14dp</item>
+    </style>
+
+    <style name="Widget.ReelyRelay.ActionItemTitle" parent="@style/Widget.Leanback.GuidedActionItemTitleStyle">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_medium</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/text_strong</item>
+    </style>
+
+    <style name="Widget.ReelyRelay.ActionItemDescription" parent="@style/Widget.Leanback.GuidedActionItemDescriptionStyle">
+        <item name="android:fontFamily">@font/plus_jakarta_sans_regular</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:textColor">@color/text_muted</item>
+        <item name="android:layout_marginTop">3dp</item>
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+
+    <!-- The guidance panel's own text - see res/layout/guidance.xml -->
+    <style name="Widget.ReelyRelay.GuidanceBreadcrumb">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">10dp</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/text_dim</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:letterSpacing">0.12</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="Widget.ReelyRelay.GuidanceTitle">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_semibold</item>
+        <item name="android:textSize">32sp</item>
+        <item name="android:textColor">@color/text_strong</item>
+        <item name="android:letterSpacing">-0.015</item>
+        <item name="android:lineSpacingMultiplier">1.08</item>
+        <item name="android:maxLines">3</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="Widget.ReelyRelay.GuidanceDescription">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">14dp</item>
+        <item name="android:fontFamily">@font/plus_jakarta_sans_regular</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:textColor">@color/text_muted</item>
+        <item name="android:lineSpacingMultiplier">1.3</item>
+        <item name="android:textAlignment">viewStart</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
 </resources>
