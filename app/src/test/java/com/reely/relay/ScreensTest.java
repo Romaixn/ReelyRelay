@@ -145,10 +145,12 @@ public class ScreensTest {
         assertEquals(app.getString(R.string.home_needs_accessibility), SetupState.summary(app));
 
         enableAccessibility();
-        // Test builds are made without a bundled TMDB key.
-        assertEquals(app.getString(R.string.home_needs_tmdb_key), SetupState.summary(app));
-
-        Preferences.setTmdbApiKey(app, "0123456789abcdef0123456789abcdef");
+        // Whether a key is bundled depends on how this build was made: a
+        // local build usually has none, the release workflow always has one.
+        if (BuildConfig.TMDB_API_KEY.trim().isEmpty()) {
+            assertEquals(app.getString(R.string.home_needs_tmdb_key), SetupState.summary(app));
+            Preferences.setTmdbApiKey(app, "0123456789abcdef0123456789abcdef");
+        }
         assertTrue(SetupState.isWorking(app));
         assertEquals(app.getString(R.string.home_ready_no_button), SetupState.summary(app));
 

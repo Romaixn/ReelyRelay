@@ -2,6 +2,11 @@
 #
 #   git tag v1.0.0 && git push origin v1.0.0
 #
+# It can also be run by hand (Actions -> Release -> Run workflow, or
+# `gh workflow run Release -f tag=v1.0.0`). That builds the branch it is
+# run on and publishes it under the given tag - for a tag whose own run
+# failed on something since fixed, without having to move the tag.
+#
 # The APK is always attached as ReelyRelay.apk - the in-app updater takes
 # the release's .apk asset, and the install guide links to
 # releases/latest/download/ReelyRelay.apk.
@@ -17,29 +22,38 @@ name: Release
 on:
   push:
     tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Version tag to publish, e.g. v1.0.0"
+        required: true
 
 permissions:
   contents: write
+
+env:
+  # The pushed tag, or the one typed in for a manual run.
+  TAG: ${{ inputs.tag || github.ref_name }}
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # The in-app updater compares the release tag with the installed
       # versionName, so a tag that doesn't match would offer the "update"
       # forever.
       - name: Check the tag matches versionName
         run: |
-          version="${GITHUB_REF_NAME#v}"
+          version="${TAG#v}"
           if ! grep -q "versionName = \"$version\"" app/build.gradle.kts; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match versionName in app/build.gradle.kts"
+            echo "::error::Tag $TAG does not match versionName in app/build.gradle.kts"
             exit 1
           fi
 
       # gradle/gradle-daemon-jvm.properties pins the Gradle daemon to Java 25.
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 25
@@ -64,11 +78,14 @@ jobs:
           RELEASE_KEY_PASSWORD: ${{ secrets.RELEASE_KEY_PASSWORD }}
         run: ./gradlew --no-daemon testDebugUnitTest assembleRelease
 
+      # --target only matters on a manual run for a tag that doesn't exist
+      # yet: the tag is then created on the commit that was built.
       - name: Publish the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           cp app/build/outputs/apk/release/app-release.apk ReelyRelay.apk
-          gh release create "$GITHUB_REF_NAME" ReelyRelay.apk \
-            --title "ReelyRelay ${GITHUB_REF_NAME#v}" \
+          gh release create "$TAG" ReelyRelay.apk \
+            --target "$GITHUB_SHA" \
+            --title "ReelyRelay ${TAG#v}" \
             --generate-notes
