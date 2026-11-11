@@ -30,8 +30,8 @@ android {
         // the field. The wizard default of 35 would exclude almost all of them.
         minSdk = 24
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.0.1"
 
         // Read from local.properties (gitignored, not versioned), or from
         // the TMDB_API_KEY environment variable (CI). This is the shared

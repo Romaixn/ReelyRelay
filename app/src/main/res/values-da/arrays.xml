@@ -30,15 +30,4 @@
         <item>Sponsored</item>
     </string-array>
 
-    <!--
-        Confirmed live: "Window-state event while match pending:
-        class=...EntityActivity text=[Infoside] contentDesc=[null]",
-        captured from the same EntityActivity window
-        handleVoiceSearchDetailPage() checks.
-    -->
-    <string-array name="voice_search_detail_page_labels">
-        <item>Infoside</item>
-        <item>Detail Page</item>
-    </string-array>
-
 </resources>

@@ -13,7 +13,7 @@
       - subscription_marker_prefix / subscription_marker_suffix: the
         Spanish phrasing has no variable middle part, so it lives in
         title_markers below exactly as it did when it was a Java constant.
-      - voice_search_detail_page_labels, ocr_chrome_denylist: no Spanish
+      - ocr_chrome_denylist: no Spanish
         value has ever been observed.
 -->
 <resources>

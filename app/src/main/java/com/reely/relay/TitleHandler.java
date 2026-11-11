@@ -15,13 +15,12 @@ import java.util.concurrent.ExecutorService;
  * UsageStats+OCR path (FireTvWatcherService) run identical logic instead of
  * maintaining two copies.
  *
- * The only thing that differs between the two callers is what needs to
- * happen around an overlay-state change: the accessibility service has to
- * keep TYPE_WINDOW_STATE_CHANGED live-conditional on whether a match is
- * pending (refreshEventTypes()) and record its own overlay transitions for
- * the voice-search cooldown (markOwnOverlayActivity()); the Fire TV watcher
- * needs neither. Those two hooks are the Coordinator; the Fire TV watcher
- * passes no-ops.
+ * The only thing that differs between the two callers is what happens
+ * around an overlay transition: the accessibility service records its own
+ * overlay transitions, so it can tell a window-state event caused by them
+ * from the user opening a new detail page (markOwnOverlayActivity()); the
+ * Fire TV watcher doesn't need to. That hook is the Coordinator; the Fire
+ * TV watcher passes a no-op.
  *
  * All public methods must be called on the main thread - handle() posts its
  * own background work to the executor and marshals UI back via the main
@@ -35,12 +34,10 @@ final class TitleHandler {
     private static final long DEBOUNCE_MS = 4000;
 
     /**
-     * The two overlay-related side effects the accessibility service needs
-     * and the Fire TV watcher doesn't - see class doc. Both are called on
-     * the main thread.
+     * The overlay-related side effect the accessibility service needs and
+     * the Fire TV watcher doesn't - see class doc. Called on the main thread.
      */
     interface Coordinator {
-        void onOverlayStateChanged();
         void onOverlayActivity();
     }
 
@@ -58,6 +55,7 @@ final class TitleHandler {
 
     private MatchTrayOverlay trayOverlay;
     private volatile String lastHandledTitle;
+    private volatile int lastHandledYear = LauncherDetailPage.UNKNOWN_YEAR;
     private volatile long lastHandledAtMillis;
 
     TitleHandler(Context context, WatchNowOverlay overlay, ExecutorService backgroundExecutor,
@@ -70,7 +68,7 @@ final class TitleHandler {
         this.coordinator = coordinator;
     }
 
-    /** Whether the ambiguous-match chooser tray is currently up - see RelayAccessibilityService.handleVoiceSearchDetailPage(). */
+    /** Whether the ambiguous-match chooser tray is currently up - see RelayAccessibilityService.onDetailPageTitle(). */
     boolean isChooserShowing() {
         return trayOverlay != null && trayOverlay.isShowing();
     }
@@ -83,7 +81,22 @@ final class TitleHandler {
     }
 
     void handle(String title) {
-        handleInternal(java.util.Collections.singletonList(title), false);
+        handle(title, LauncherDetailPage.UNKNOWN_YEAR);
+    }
+
+    /**
+     * @param year the year the launcher shows for this title, or
+     *             LauncherDetailPage.UNKNOWN_YEAR. When it matches exactly
+     *             one same-named TMDB result, that result is used without
+     *             asking - see MetadataResolver.exactMatchFromYear().
+     */
+    void handle(String title, int year) {
+        handleInternal(java.util.Collections.singletonList(title), false, year);
+    }
+
+    /** How long ago a title was last taken on, by any route - see RelayAccessibilityService.onDetailPageTitle(). */
+    long millisSinceLastHandled() {
+        return System.currentTimeMillis() - lastHandledAtMillis;
     }
 
     /**
@@ -97,16 +110,20 @@ final class TitleHandler {
      * behavior via handle().
      */
     void handleOcr(List<String> titles) {
-        handleInternal(titles, true);
+        handleInternal(titles, true, LauncherDetailPage.UNKNOWN_YEAR);
     }
 
-    private void handleInternal(List<String> titles, boolean fromOcr) {
+    private void handleInternal(List<String> titles, boolean fromOcr, int year) {
         String title = titles.get(0);
         long now = System.currentTimeMillis();
-        if (title.equals(lastHandledTitle) && (now - lastHandledAtMillis) < DEBOUNCE_MS) {
+        // The same title again is a repeat - unless it now comes with a year
+        // it didn't have, which can change which result is picked.
+        if (title.equals(lastHandledTitle) && year == lastHandledYear
+                && (now - lastHandledAtMillis) < DEBOUNCE_MS) {
             return;
         }
         lastHandledTitle = title;
+        lastHandledYear = year;
         lastHandledAtMillis = now;
 
         if (!ReelyPlayer.isInstalled(appContext)) {
@@ -131,7 +148,6 @@ final class TitleHandler {
         boolean confirmFirst = overlay != null && overlay.isPermissionGranted();
         if (confirmFirst) {
             overlay.showLoading();
-            coordinator.onOverlayStateChanged();
             coordinator.onOverlayActivity();
         }
 
@@ -151,7 +167,9 @@ final class TitleHandler {
                 return;
             }
 
-            if (Preferences.isChooserEnabled(appContext) && MetadataResolver.isAmbiguous(candidates)) {
+            TitleCandidate byYear = MetadataResolver.exactMatchFromYear(candidates, year);
+            if (byYear == null && Preferences.isChooserEnabled(appContext)
+                    && MetadataResolver.isAmbiguous(candidates)) {
                 Log.d(TAG, "Ambiguous match for " + usedTitle + " (" + candidates.size() + " candidates)");
                 if (confirmFirst) {
                     mainHandler.post(() -> overlay.showConfirmAmbiguous(() -> showChooser(usedTitle, candidates)));
@@ -161,11 +179,18 @@ final class TitleHandler {
                 return;
             }
 
-            TitleCandidate best = candidates.get(0);
-            Log.d(TAG, "Resolved " + usedTitle + " -> tmdb:" + best.tmdbId + " (" + best.type + ")");
+            TitleCandidate best = byYear != null ? byYear : candidates.get(0);
+            Log.d(TAG, "Resolved " + usedTitle + " -> tmdb:" + best.tmdbId + " (" + best.type + ", "
+                    + best.year + (byYear != null ? ", picked by year" : "") + ")");
 
             if (confirmFirst) {
-                mainHandler.post(() -> overlay.showConfirm(() -> open(best)));
+                mainHandler.post(() -> overlay.showConfirm(() -> {
+                    // Pressing it takes the button down, which hands focus
+                    // back to the launcher's detail page - mark that, so it
+                    // isn't mistaken for a new page to offer.
+                    coordinator.onOverlayActivity();
+                    open(best);
+                }));
             } else {
                 open(best);
             }
@@ -189,7 +214,6 @@ final class TitleHandler {
     /** Discards whatever the confirm button is holding. Main thread only; overlay must be non-null. */
     private void abandonPending() {
         overlay.abandon();
-        coordinator.onOverlayStateChanged();
         coordinator.onOverlayActivity();
     }
 
@@ -250,7 +274,7 @@ final class TitleHandler {
                     // player that's about to launch.
                     if (overlay != null) {
                         overlay.abandon();
-                        coordinator.onOverlayStateChanged();
+                        coordinator.onOverlayActivity();
                     }
                 }
             });

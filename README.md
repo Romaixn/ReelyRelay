@@ -32,7 +32,7 @@ ReelyRelay is a fork of **[TVRelay](https://github.com/hmartinez94/TVRelay)** by
 ## How it works
 
 1. **You pick a recommendation** on the home screen.
-2. **ReelyRelay identifies it.** Android's Accessibility API lets an app observe what's on screen; ReelyRelay uses it narrowly, watching only for clicks on the Google TV launcher. When a click carries a movie or show title, it looks that title up on [TMDB](https://www.themoviedb.org/).
+2. **ReelyRelay identifies it.** Android's Accessibility API lets an app observe what's on screen; ReelyRelay uses it narrowly, on the Google TV launcher only. It reads the title - and the year, when shown - from the recommendation you selected or from the launcher's own page for it, then looks it up on [TMDB](https://www.themoviedb.org/). The year picks the right one among same-named titles.
 3. **You confirm, Reely Player opens** on that title's page, through its `reely://detail/{movie|series}/{tmdbId}` link.
 
 <img src="docs/img/watch-now.png" alt="The Watch now in Reely Player button" width="360">
@@ -133,7 +133,7 @@ Worth knowing:
 | --- | --- |
 | **Watch now button** | Whether the button returns after you dismiss it, how long it waits (0.5-15 s, default 4), and "Hold Select to confirm". |
 | **Search for a title** | Type a title yourself; everything after that works like an automatic match. |
-| **Title matching** | "Ask which year to open" when several titles share a name; "Read titles from the screen" for cards that carry no title (see [Limitations](#limitations)). |
+| **Title matching** | "Ask which year to open" when several titles share a name and the launcher shows no year to settle it; "Read titles from the screen", a last resort for when the title can't be read any other way (see [Limitations](#limitations)). |
 | **YouTube** | Optionally open YouTube video recommendations in SmartTube or TizenTube Cobalt. Off by default, and separate from Reely Player. |
 | **More → TMDB key** | Lookups use a key bundled with the app. If it is ever rate-limited, enter your own free key ([themoviedb.org](https://www.themoviedb.org/), Settings → API). "Send key from phone…" shows a QR code so you can paste it on your phone instead of typing 32 characters with a remote. |
 
@@ -141,9 +141,8 @@ The interface is available in English, French and Spanish.
 
 ## Limitations
 
-- **Some recommendation cards, and voice search results, don't expose a title.** That is a limit of what the launcher hands third-party apps. Use **Search for a title**, or turn on **Title matching → Read titles from the screen** (off by default): it reads the title off the screen on the device, and Android shows its recording indicator while it is on.
-- **TMDB can match the wrong title** when a different movie or show has the same name. When two or more titles match exactly, ReelyRelay asks which one you meant.
-- **Launcher languages.** Detection relies partly on phrases the launcher itself uses, which were captured for English (and, unverified, Spanish). Other languages - French included - rest on language-independent fallbacks, which cover most cards. To add real phrases for a language, see `app/src/main/res/values-fr/arrays.xml`.
+- **The title is read from the launcher's screens.** A launcher update that changes how its detail page is built could hide it again. In that case, use **Search for a title**, or turn on **Title matching → Read titles from the screen** (off by default): it reads the title off the screen's pixels on the device, and Android shows its recording indicator while it is on.
+- **TMDB can match the wrong title** when a different movie or show has the same name. The year shown by the launcher settles most of these; when it can't, ReelyRelay asks which one you meant.
 - **YouTube redirect** opens a search for the video's title in the chosen app, not the exact video.
 
 ## Troubleshooting
@@ -160,7 +159,7 @@ If it does, check that the click is being seen:
 adb logcat -s ReelyRelay:D TitleHandler:D WatchNowOverlay:D PlayerLauncher:D
 ```
 
-Every launcher click logs a `Click event:` line with exactly what the launcher exposed for that card.
+Every launcher click logs a `Click event:` line with what the launcher exposed for that card, and every detail page a `Detail page:` line with the title (and year) read from it. The service settings line in `adb shell dumpsys accessibility | grep -A1 "Bound services"` should show `capabilities=1`: with `0`, Android isn't letting ReelyRelay read the screen at all.
 
 ## Building from source
 

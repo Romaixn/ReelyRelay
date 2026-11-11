@@ -88,18 +88,6 @@
     </string-array>
 
     <!--
-        The generic, title-less window label the Google TV launcher's
-        EntityActivity carries in event.getText()[0]. Gates the entire
-        voice-search OCR fallback trigger; matched with contentEquals
-        (exact), not contains, because it is a whole standalone label.
-        Danish equivalent "Infoside" confirmed live 2026-09-09 from the
-        same EntityActivity window.
-    -->
-    <string-array name="voice_search_detail_page_labels">
-        <item>Detail Page</item>
-    </string-array>
-
-    <!--
         Known UI chrome labels that can end up as their own ML Kit text
         block on a detail page and must not be mistaken for the title
         itself. Guessed, not confirmed against a real capture. Compared

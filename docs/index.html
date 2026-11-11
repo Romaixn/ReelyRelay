@@ -226,9 +226,9 @@ adb shell appops set com.reely.relay ACCESS_RESTRICTED_SETTINGS allow</code></pr
       <h2>When nothing opens</h2>
       <p><strong>Check that Reely Player itself takes the link.</strong> This should land on Iron Man, with ReelyRelay out of the picture:</p>
       <div class="code"><pre><code>adb shell am start -a android.intent.action.VIEW -d "reely://detail/movie/1726" com.reely.reely</code></pre></div>
-      <p><strong>Check that the click is seen.</strong> Pick a recommendation with this running and look for a "Click event" line:</p>
+      <p><strong>Check that the click is seen.</strong> Pick a recommendation with this running and look for a <code>Detail page:</code> line:</p>
       <div class="code"><pre><code>adb logcat -s ReelyRelay:D TitleHandler:D WatchNowOverlay:D PlayerLauncher:D</code></pre></div>
-      <p class="muted">Some cards, and voice search results, don't expose a title at all. For those, use <strong>Search for a title</strong> in the app, or turn on <strong>Title matching</strong>, then <strong>Read titles from the screen</strong>.</p>
+      <p class="muted">If no <code>Detail page:</code> line shows up when a movie's page opens, the title couldn't be read. Use <strong>Search for a title</strong> in the app, or turn on <strong>Title matching</strong>, then <strong>Read titles from the screen</strong>.</p>
     </section>
   </main>
 

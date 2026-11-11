@@ -46,7 +46,7 @@ import android.widget.Button;
  * 2026-08-25 - it fired even while the user was just looking at the screen
  * without touching the remote, and also fed a real self-sustaining loop with
  * the voice-search OCR fallback, see RelayAccessibilityService's
- * handleVoiceSearchDetailPage() SECOND CORRECTION). Concealing now only ever
+ * onDetailPageTitle()). Concealing now only ever
  * happens in direct response to a key press. This is a deliberate behavior
  * change from the original implementation, where any dismissal was
  * permanent. The pending match is fully and permanently

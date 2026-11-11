@@ -130,18 +130,10 @@ public final class FireTvWatcherService extends Service {
         overlay = new WatchNowOverlay(this);
         ocrCaptureManager = new OcrCaptureManager(this, overlay);
         // No-op coordinator: unlike the accessibility service, the watcher
-        // has no window-state event filtering to keep in sync and no
-        // voice-search cooldown to record - see TitleHandler.Coordinator.
-        titleHandler = new TitleHandler(this, overlay, backgroundExecutor, mainHandler,
-                new TitleHandler.Coordinator() {
-                    @Override
-                    public void onOverlayStateChanged() {
-                    }
-
-                    @Override
-                    public void onOverlayActivity() {
-                    }
-                });
+        // receives no window-state events, so it has no overlay transitions
+        // to tell apart from real ones - see TitleHandler.Coordinator.
+        titleHandler = new TitleHandler(this, overlay, backgroundExecutor, mainHandler, () -> {
+        });
         Log.d(TAG, "Fire TV watcher created");
     }
 

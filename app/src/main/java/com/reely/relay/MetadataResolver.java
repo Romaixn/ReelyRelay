@@ -35,4 +35,24 @@ final class MetadataResolver {
         }
         return false;
     }
+
+    /**
+     * The exact title match released in the given year, or null when there
+     * is none or the year is unknown. The launcher's detail page shows the
+     * year (see LauncherDetailPage), which settles most same-name cases -
+     * "Supergirl" the 2026 film rather than the 2015 series - without
+     * asking. A launcher year that doesn't match TMDB's (a regional release
+     * date) just returns null, leaving the normal chooser to decide.
+     */
+    static TitleCandidate exactMatchFromYear(List<TitleCandidate> candidates, int year) {
+        if (year == LauncherDetailPage.UNKNOWN_YEAR) {
+            return null;
+        }
+        for (TitleCandidate candidate : candidates) {
+            if (candidate.isExactMatch && candidate.year == year) {
+                return candidate;
+            }
+        }
+        return null;
+    }
 }

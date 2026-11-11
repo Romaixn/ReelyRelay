@@ -35,18 +35,6 @@ public final class Preferences {
         return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
-    /**
-     * The underlying SharedPreferences instance, for a caller (currently
-     * only RelayAccessibilityService) that needs to observe changes via
-     * OnSharedPreferenceChangeListener rather than polling one getter -
-     * see its live-conditional OCR eventTypes wiring. Package-private:
-     * every other caller should keep going through the named getters/
-     * setters above instead of reading/writing keys directly.
-     */
-    static SharedPreferences rawPrefs(Context context) {
-        return prefs(context);
-    }
-
     public static boolean isDisclosureAccepted(Context context) {
         return prefs(context).getBoolean(KEY_DISCLOSURE_ACCEPTED, false);
     }

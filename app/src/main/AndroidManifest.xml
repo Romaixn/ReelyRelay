@@ -169,8 +169,14 @@
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
+            <!-- The name must be exactly "android.accessibilityservice"
+                 (AccessibilityService.SERVICE_META_DATA). TVRelay used
+                 "android.accessibilityservice.config", which Android
+                 silently ignores: the service still ran, but with none of
+                 the config below - in particular without the right to read
+                 the screen, so it only ever saw what a click event carried. -->
             <meta-data
-                android:name="android.accessibilityservice.config"
+                android:name="android.accessibilityservice"
                 android:resource="@xml/accessibility_service_config" />
         </service>
 

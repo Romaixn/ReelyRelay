@@ -2,26 +2,34 @@ package com.reely.relay;
 
 import android.accessibilityservice.AccessibilityService;
 import android.accessibilityservice.AccessibilityServiceInfo;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
+import android.view.accessibility.AccessibilityWindowInfo;
 
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Watches for clicks on the Google TV launcher
- * (com.google.android.apps.tv.launcherx) and the Fire TV launcher
- * (com.amazon.tv.launcher). When the clicked item is a movie/show
- * recommendation card, extracts its title, looks it up on TMDB, and offers
- * to open it in Reely Player instead of whatever the launcher would
- * normally do (see TitleHandler for that pipeline and ReelyPlayer for the
- * deep link it ends in).
+ * Watches the Google TV launcher (com.google.android.apps.tv.launcherx) and
+ * the Fire TV launcher (com.amazon.tv.launcher) for the user picking a movie
+ * or show, finds its title, looks it up on TMDB, and offers to open it in
+ * Reely Player instead of whatever the launcher would normally do (see
+ * TitleHandler for that pipeline and ReelyPlayer for the deep link it ends
+ * in).
+ *
+ * The title comes from one of two places on Google TV:
+ *  - the click on the recommendation card, when the card carries it in its
+ *    content-desc - immediate, so the button appears as the page opens;
+ *  - otherwise the launcher's own detail page, which the click (or a voice
+ *    search) leads to and which always shows the title - see
+ *    LauncherDetailPage and handleDetailPage().
+ * Reading the screen off pixels (OCR) is only a last resort for when
+ * neither works.
  *
  * Every other click is left alone - normal launcher behavior (app icons,
  * the "Your apps" row, etc.) is untouched.
@@ -34,43 +42,44 @@ public class RelayAccessibilityService extends AccessibilityService {
     private static final String AMAZON_LAUNCHER_PACKAGE = "com.amazon.tv.launcher";
 
     // Every locale-dependent card-shape marker (title/subscription/YouTube
-    // markers, the sponsored-ad label, the voice-search detail-page label)
-    // now lives in res/values/arrays.xml (+ values-es, values-da),
-    // resolved through LauncherLocale.systemResources() - see that class
-    // and those files for the markers themselves and why they're not plain
-    // Java constants.
+    // markers, the sponsored-ad label) lives in res/values/arrays.xml
+    // (+ values-es, values-da, values-fr), resolved through
+    // LauncherLocale.systemResources() - see that class and those files for
+    // the markers themselves and why they're not plain Java constants.
+
+    // The launcher's detail page for a movie or show. Confirmed on a Google
+    // TV Streamer (2026-11-11): launcherx/.entity.EntityActivity, the same
+    // for a card click and a voice search.
+    private static final String DETAIL_PAGE_CLASS_MARKER = "EntityActivity";
+
+    // When to look for the title after the detail page opens, in ms from
+    // the window-state event. The page fills in a moment after it appears;
+    // the last attempt is a generous margin for a slow box.
+    private static final long[] DETAIL_PAGE_READ_DELAYS_MS = {0, 200, 500, 1000, 1800, 3000};
+
+    // A click that carried its own title opens the detail page within this
+    // window; the page's title is then the same title, already being
+    // looked up - see onDetailPageTitle().
+    private static final long CLICK_TO_DETAIL_PAGE_MS = 3000;
+
+    // The title of the detail page last seen, so the page is offered once
+    // per visit, not again each time focus returns to it (our own button
+    // hiding or closing, coming back from Reely Player). Cleared when the
+    // user is back on the home screen. Main thread only.
+    private String lastDetailPageTitle;
+
+    // Bumped by every new detail page or return home, so a read still
+    // retrying for an earlier page stops. Main thread only.
+    private int detailPageReadGeneration;
 
     private static final String FIRE_TV_MAIN_IMAGE_ID = "com.amazon.tv.launcher:id/main_image";
 
-    // Identifies a TYPE_WINDOW_STATE_CHANGED event's window as the Google TV
-    // launcher's own home/lobby screen, so a pending WatchNowOverlay match
-    // can be abandoned once the user actually navigates back there - see
-    // handleLauncherLobbyReturn() and WatchNowOverlay.notifyLauncherLobby().
-    //
-    // UNVERIFIED against a real event.getClassName() value for this exact
-    // flow (a recommendation-card click, this feature's actual trigger) -
-    // the only evidence for "HomeActivity" comes from a prior,
-    // since-reverted investigation that temporarily widened
-    // eventTypes/packageNames to diagnose an unrelated voice-search bug, and
-    // captured a real logcat transition "HomeActivity -> katniss (FrameLayout) -> systemui ->
-    // launcherx EntityActivity" for a VOICE-SEARCH-driven detail page. That
-    // TYPE_WINDOW_STATE_CHANGED event carried text=[Detail Page] (a static,
-    // generic label - useless as a title) and contentDesc=[null], but only
-    // the SHORT class names "HomeActivity"/"EntityActivity" were visible in
-    // that trace - the fully-qualified class name was never independently
-    // confirmed against event.getClassName() in this codebase. That's why
-    // the match below uses contains() rather than equals()/contentEquals() -
-    // deliberately forgiving of an unconfirmed outer-class/package prefix,
-    // same pattern as isYouTubeCard()/isMovieOrShowCard()'s marker matching.
-    // Also unverified: whether this substring could ever mis-match against
-    // "EntityActivity" (glimpsed in the same trace) or some other window
-    // class name that happens to contain "HomeActivity".
-    //
-    // Fix-if-wrong workflow: handleLauncherLobbyReturn() below logs every
-    // window-state class name seen while a match is pending, unconditionally
-    // - the same workflow already used to confirm/correct R.array.youtube_markers.
-    // WatchNowOverlay's MAX_LIFETIME_MS cap firing (its own Log.w) is itself
-    // indirect diagnostic evidence this constant is wrong and never matched.
+    // The launcher's home screen - see onLauncherHome(). Confirmed on a
+    // Google TV Streamer (2026-11-11): its HOME activity is
+    // launcherx/.home.HomeActivity. Matched with contains(), as is
+    // DETAIL_PAGE_CLASS_MARKER, so a short or fully-qualified class name
+    // both work. If this ever stops matching, a pending button is still
+    // dropped by WatchNowOverlay's MAX_LIFETIME_MS cap, which logs it.
     private static final String LOBBY_CLASS_MARKER = "HomeActivity";
 
     // Avoids re-handling the same title repeatedly.
@@ -78,16 +87,18 @@ public class RelayAccessibilityService extends AccessibilityService {
     private volatile String lastHandledTitle;
     private volatile long lastHandledAtMillis;
 
-    // Separate, time-only debounce for the OCR fallback trigger points
-    // (see triggerOcrCapture()) - there's no title yet at trigger time, so
-    // the title-based debounce above doesn't apply.
+    // Separate, time-only debounce for the OCR fallback (see
+    // triggerOcrCapture()) - there's no title yet at trigger time, so the
+    // title-based debounce above doesn't apply.
     private static final long OCR_DEBOUNCE_MS = 3000;
     private volatile long lastOcrTriggerAtMillis;
 
     // Cooldown after ANY of our own overlay transitions (WatchNowOverlay
     // showing/hiding/abandoning, MatchTrayOverlay opening/closing) before a
-    // window-state event is trusted as a fresh voice-search landing - see
-    // handleVoiceSearchDetailPage()'s javadoc. Confirmed real bug this
+    // window-state event is trusted as the user opening a detail page - see
+    // onDetailPageTitle(). Every one of those transitions hands window focus
+    // back to the launcher's detail page, which fires a window-state event
+    // that looks exactly like the page opening. Confirmed real bug this
     // fixes (2026-08-25, on-device): overlay.hasPendingMatch() alone isn't
     // enough - pressing OK on an ambiguous match hands off to
     // MatchTrayOverlay (abandoning WatchNowOverlay first), and dismissing
@@ -119,7 +130,6 @@ public class RelayAccessibilityService extends AccessibilityService {
     // Fire TV UsageStats+OCR path (FireTvWatcherService) runs the same logic.
     private TitleHandler titleHandler;
     private YouTubeClickGate youTubeClickGate;
-    private SharedPreferences.OnSharedPreferenceChangeListener ocrPrefsListener;
 
     @Override
     protected void onServiceConnected() {
@@ -127,138 +137,46 @@ public class RelayAccessibilityService extends AccessibilityService {
 
         overlay = new WatchNowOverlay(this);
 
-        // Start from the info the system parsed from the XML meta-data
-        // rather than a brand-new AccessibilityServiceInfo, to be safe.
-        // Still set programmatically, not left to the XML alone: on some
-        // devices (TCL/Android 12, per the reference app this is based on)
-        // the XML config silently fails to apply at runtime - dumpsys
-        // accessibility shows an empty eventTypes despite a correctly
-        // compiled XML.
-        //
-        // Deliberately click-event-only for movie/show detection (see
-        // isMovieOrShowCard()) - window-content introspection
-        // (getRootInActiveWindow()/event.getSource()/getWindows(), even
-        // with every relevant flag set) was tested extensively on a real
-        // device and consistently returned null/empty, most likely because
-        // Android restricts that capability for sideloaded apps that
-        // haven't completed Google's Play Console AccessibilityService
-        // declaration (see README/plan) - not something fixable from here.
-        // takeScreenshot() was also tried as an alternative, on the theory
-        // that it's gated by a separate capability (canTakeScreenshot,
-        // independent of canRetrieveWindowContent) and operates on pixels
-        // rather than the accessibility tree - it threw a hard
-        // SecurityException ("Services don't have the capability of taking
-        // the screenshot") on the same real device, confirming the
-        // restriction is broad (any sensitive capability), not narrow to
-        // one specific API. Cards with no accessible text at all on the
-        // click event (seen specifically on the "Top picks for you" ML row)
-        // instead fall back to the OCR path below (triggerOcrCapture()) when
-        // that optional fallback is enabled.
+        // The same settings as res/xml/accessibility_service_config.xml,
+        // applied again in code. Upstream TVRelay relied on this alone: its
+        // manifest named the config meta-data wrongly, so Android never read
+        // that file - which is also why reading window content and taking
+        // screenshots both failed for it, and why it fell back on OCR. The
+        // two must agree; canRetrieveWindowContent itself can only come from
+        // the file.
         AccessibilityServiceInfo info = getServiceInfo();
         if (info == null) {
             info = new AccessibilityServiceInfo();
         }
-        // TYPE_WINDOW_STATE_CHANGED is included conditionally - see
-        // currentEventTypes(): needed while the OCR fallback is
-        // enabled (to catch the voice-search EntityActivity transition), the
-        // YouTube redirect is on (YouTubeClickGate), or
-        // a WatchNowOverlay match is currently pending (to detect
-        // return-to-lobby). info.packageNames below stays UNCHANGED for
-        // this purpose - do not widen it to request window-state events for
-        // AMAZON_LAUNCHER_PACKAGE too; Fire TV is confirmed (see class
-        // comments already in this file) to
-        // receive zero AccessibilityEvents of any type on real hardware, so
-        // there's no point.
-        info.eventTypes = currentEventTypes();
+        // Window-state events, always: they are how the launcher's detail
+        // page is noticed (handleDetailPage()), how a return home abandons a
+        // pending button (onLauncherHome()), and how
+        // YouTubeClickGate confirms a click opened a YouTube video. They are
+        // rare - one per screen change in the packages below.
+        info.eventTypes = AccessibilityEvent.TYPE_VIEW_CLICKED | AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
         info.feedbackType = AccessibilityServiceInfo.FEEDBACK_GENERIC;
         info.notificationTimeout = 100;
-        // The YouTube app is here only for its window-state events, which
-        // confirm a YouTube-looking click really opened a YouTube video -
-        // see YouTubeClickGate. Its clicks are never handled.
+        // The YouTube app is here only for its window-state events - see
+        // YouTubeClickGate. Its clicks are never handled.
         info.packageNames = new String[]{GOOGLE_TV_LAUNCHER_PACKAGE, AMAZON_LAUNCHER_PACKAGE,
                 YouTubeClickGate.YOUTUBE_TV_PACKAGE};
-        // Required for getViewIdResourceName() to return anything - the
-        // Fire TV card lookup below depends on it.
-        info.flags |= AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS;
+        // View ids are how the detail page's title is found
+        // (LauncherDetailPage) and the Fire TV card lookup below works.
+        // Interactive windows let the launcher's window be read even while
+        // our own button holds focus - see launcherWindowRoot().
+        info.flags |= AccessibilityServiceInfo.FLAG_REPORT_VIEW_IDS
+                | AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS;
         setServiceInfo(info);
 
         ocrCaptureManager = new OcrCaptureManager(this, overlay);
         youTubeClickGate = new YouTubeClickGate(this, mainHandler, this::launchYouTubeRedirect);
 
-        // The coordinator wires the shared pipeline back to this service's
-        // two accessibility-only concerns: keeping TYPE_WINDOW_STATE_CHANGED
-        // live-conditional on a pending match (refreshEventTypes()) and
-        // recording overlay transitions for the voice-search cooldown
-        // (markOwnOverlayActivity()). Passed the service (this) as the tray
-        // host so the chooser can use the permission-free
+        // The coordinator records overlay transitions for the detail-page
+        // cooldown (markOwnOverlayActivity()). Passed the service (this) as
+        // the tray host so the chooser can use the permission-free
         // TYPE_ACCESSIBILITY_OVERLAY - see MatchTrayOverlay.
         titleHandler = new TitleHandler(this, overlay, backgroundExecutor, mainHandler,
-                new TitleHandler.Coordinator() {
-                    @Override
-                    public void onOverlayStateChanged() {
-                        refreshEventTypes();
-                    }
-
-                    @Override
-                    public void onOverlayActivity() {
-                        markOwnOverlayActivity();
-                    }
-                });
-
-        // Keeps TYPE_WINDOW_STATE_CHANGED live-conditional on preference
-        // changes (the OCR toggle) - see currentEventTypes()/
-        // refreshEventTypes(). The OTHER half of the union - whether a
-        // WatchNowOverlay match is pending - is instead recomputed
-        // reactively at the call sites below that change overlay state,
-        // since WatchNowOverlay has no preference-style change notification
-        // of its own.
-        ocrPrefsListener = (sharedPreferences, key) -> refreshEventTypes();
-        Preferences.rawPrefs(this).registerOnSharedPreferenceChangeListener(ocrPrefsListener);
-    }
-
-    /**
-     * Base click-only eventTypes, plus TYPE_WINDOW_STATE_CHANGED whenever
-     * EITHER of two independent features needs it: the OCR fallback's
-     * voice-search trigger (Preferences.isOcrFallbackEnabled()), or
-     * WatchNowOverlay's lobby-return detection (overlay.hasPendingMatch()).
-     * refreshEventTypes()'s call sites below keep this in sync with
-     * whichever condition changed most recently, without either feature
-     * needing to know about the other.
-     */
-    private int currentEventTypes() {
-        int eventTypes = AccessibilityEvent.TYPE_VIEW_CLICKED;
-        // The YouTube redirect needs it too: YouTubeClickGate confirms a
-        // click by the YouTube app's window opening.
-        boolean needsWindowState = Preferences.isOcrFallbackEnabled(this)
-                || Preferences.isSmartTubeEnabled(this)
-                || (overlay != null && overlay.hasPendingMatch());
-        if (needsWindowState) {
-            eventTypes |= AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED;
-        }
-        return eventTypes;
-    }
-
-    /**
-     * Reapplies currentEventTypes() to the live AccessibilityServiceInfo.
-     * Called from the OCR preference listener (onServiceConnected) and from
-     * the call sites below that change whether a WatchNowOverlay match is
-     * pending (showLoading() and the abandon() sites) - NOT from inside
-     * WatchNowOverlay itself when it autonomously abandons a match (e.g. its
-     * own lobby-detection or MAX_LIFETIME_MS cap), since it has no reference
-     * back to this service. That's a deliberate, harmless gap: it just means
-     * TYPE_WINDOW_STATE_CHANGED may stay armed a little longer than
-     * strictly necessary in that case, narrowing back down on the next
-     * recompute (e.g. the next click) rather than instantly - never a
-     * correctness problem, since handleLauncherLobbyReturn() is a no-op once
-     * hasPendingMatch() is actually false.
-     */
-    private void refreshEventTypes() {
-        AccessibilityServiceInfo info = getServiceInfo();
-        if (info == null) {
-            return;
-        }
-        info.eventTypes = currentEventTypes();
-        setServiceInfo(info);
+                this::markOwnOverlayActivity);
     }
 
     @Override
@@ -375,18 +293,16 @@ public class RelayAccessibilityService extends AccessibilityService {
             return;
         }
 
-        // Some rows populate content-desc a moment after the click - it's
-        // still empty at event time. Retry once, shortly after, by
-        // re-reading the node.
+        // A card with no title in its click at all - every card, on a
+        // Google TV Streamer in French (2026-11-11). Nothing to do here:
+        // the click opens the launcher's detail page, which does show the
+        // title, and handleDetailPage() takes it from there.
+        //
+        // Some rows populate content-desc a moment after the click, though,
+        // so the card itself gets one more look shortly after.
         AccessibilityNodeInfo source = event.getSource();
         if (source == null) {
-            // Genuinely empty payload - no contentDescription, no hero
-            // text, no source node to retry against. This is the
-            // "Top picks for you" case: a sideloaded, non-isAccessibilityTool
-            // service can't retrieve window content on this device, so the
-            // click event's payload is all there is - fall back to the OCR
-            // path instead of giving up.
-            triggerOcrCapture();
+            Log.d(TAG, "No title in this click - waiting for the detail page");
             return;
         }
         mainHandler.postDelayed(() -> {
@@ -394,9 +310,7 @@ public class RelayAccessibilityService extends AccessibilityService {
             CharSequence delayed = source.getContentDescription();
             String delayedDesc = delayed != null ? delayed.toString() : null;
             if (delayedDesc == null || delayedDesc.trim().isEmpty()) {
-                // Still empty after the delayed retry - same fallback as
-                // the immediate source==null case above.
-                triggerOcrCapture();
+                Log.d(TAG, "No title in this click - waiting for the detail page");
                 return;
             }
             if (isYouTubeCard(event, delayedDesc)) {
@@ -432,192 +346,176 @@ public class RelayAccessibilityService extends AccessibilityService {
     }
 
     /**
-     * Combined TYPE_WINDOW_STATE_CHANGED handler for the two independent
-     * features that need it - see currentEventTypes()'s javadoc. Each half
-     * below is a self-contained, independently-gated check; they can't
-     * interfere with each other since they key off different conditions
-     * (OCR fallback enabled vs. an overlay match pending) and different
-     * outcomes (triggering an OCR capture vs. abandoning a pending overlay
-     * match). Only reachable at all while TYPE_WINDOW_STATE_CHANGED is in
-     * the service's eventTypes - see currentEventTypes().
+     * Every TYPE_WINDOW_STATE_CHANGED from the Google TV launcher: the user
+     * opening a detail page, or coming back to the home screen.
      */
     private void handleWindowStateChanged(AccessibilityEvent event) {
-        handleVoiceSearchDetailPage(event);
-        handleLauncherLobbyReturn(event);
-    }
-
-    /**
-     * The voice-search trigger point - voice search is a structural dead
-     * end for click-based detection, not a bug to fix.
-     * Speaking a title into the launcher's mic never fires a click event at
-     * all (the flow goes HomeActivity -> katniss -> systemui -> launcherx
-     * EntityActivity with zero TYPE_VIEW_CLICKED events anywhere), so this
-     * watches for the one confirmed, real signal instead: the window-state
-     * transition into EntityActivity, whose event.getText() carries only
-     * a generic, locale-specific label (R.array.voice_search_detail_page_labels,
-     * "Detail Page" in English) - never the real title.
-     *
-     * CORRECTION (2026-08-25, confirmed via real on-device logcat): this
-     * EntityActivity/"Detail Page" signature is NOT unique to voice search
-     * after all - the original "voice search wall" investigation only ever
-     * captured it during an actual voice-search flow, and never checked
-     * whether a normal card click's own follow-on navigation produces the
-     * same signature. It does: Google TV's launcher navigates to its own
-     * EntityActivity detail page after basically any click, as its default
-     * behavior, independent of whatever ReelyRelay does with that same click -
-     * ReelyRelay observes the click event, it doesn't cancel the launcher's
-     * own reaction to it. Without a guard, that meant every ordinary,
-     * already-correctly-detected movie click ALSO tripped this "voice
-     * search" path a moment later, which called overlay.showLoading() again
-     * and silently abandoned the real pending match (see showLoading()'s
-     * "fresh click supersedes whatever was pending" behavior in
-     * WatchNowOverlay) - then the OCR capture (of a screen that isn't a
-     * title-less voice-search landing at all) typically fails to find
-     * anything useful and abandons for good, so the button vanished for
-     * every movie, not just genuinely undetectable ones.
-     *
-     * SECOND CORRECTION (2026-08-25, confirmed via real on-device logcat): a
-     * time-window guard (skip if a click was handled within the last
-     * DEBOUNCE_MS) is not enough either - it stops the immediate aftermath
-     * of a normal click, but a real, worse cascade shows up later: once a
-     * resolved match is shown, WatchNowOverlay.hide() used to fire
-     * automatically after AUTO_DISMISS_MS (10s) of inactivity, which flipped
-     * FLAG_NOT_FOCUSABLE on the overlay window to conceal it - and THAT
-     * focus change back to the launcher's EntityActivity window itself
-     * generated another TYPE_WINDOW_STATE_CHANGED/"Detail Page" event, well
-     * past any short time-window guard. Confirmed on-device: this created a
-     * self-sustaining loop (OCR re-triggers -> re-shows the same confirm
-     * button -> resets the 10s idle timer -> hide() fires again -> repeat
-     * indefinitely) that only stopped when the user navigated away.
-     * AUTO_DISMISS_MS was removed entirely later the same day (see
-     * WatchNowOverlay's class javadoc) specifically because hide() should
-     * only ever be a direct response to a key press, which closes off this
-     * exact loop at the source - but the cooldown built below is kept as-is
-     * regardless, since it also guards the THIRD CORRECTION's cascade and
-     * ordinary click-triggered EntityActivity navigation, neither of which
-     * this removal touches.
-     *
-     * THIRD CORRECTION (2026-08-25, confirmed via real on-device testing):
-     * checking WatchNowOverlay's state alone still isn't enough - pressing
-     * OK on an ambiguous match hands off to MatchTrayOverlay (abandoning
-     * WatchNowOverlay first, so hasPendingMatch() goes back to false), and
-     * dismissing THAT tray (Back) hands focus back to the launcher's
-     * EntityActivity, producing yet another lookalike window-state event
-     * with nothing pending on either overlay by then. (2026-08-26: the
-     * handoff described in that parenthetical has since changed - with the
-     * reappear setting on it now CONCEALS WatchNowOverlay instead of
-     * abandoning it, see concealForHandoff(), so hasPendingMatch() stays
-     * true through that exact sequence - but the correction's conclusion
-     * stands unchanged, because the reappear-off path still abandons and
-     * the general point below was never specific to that one sequence.)
-     * There is no finite
-     * enumeration of "which overlay transition might cause this" that's
-     * likely to be complete - every show/hide/abandon on either overlay is
-     * a plausible cause, since all of them change what currently holds
-     * window focus.
-     *
-     * Fix: instead of tracking state per-overlay, track a single cooldown
-     * (lastOwnOverlayActivityAtMillis / OVERLAY_TRANSITION_COOLDOWN_MS)
-     * bumped by markOwnOverlayActivity() at every place either overlay's
-     * visibility changes for any reason - see that method's call sites.
-     * Combined with the two still-useful direct state checks (an overlay
-     * transition system this reactive will almost always have very recently
-     * bumped the cooldown anyway, but the direct checks cost nothing and
-     * cover the rare case a transition's own bump hasn't landed yet).
-     */
-    private void handleVoiceSearchDetailPage(AccessibilityEvent event) {
-        if (!Preferences.isDisclosureAccepted(this) || !Preferences.isOcrFallbackEnabled(this)) {
-            return;
-        }
-        if (overlay != null && overlay.hasPendingMatch()) {
-            return;
-        }
-        if (titleHandler != null && titleHandler.isChooserShowing()) {
-            return;
-        }
-        if ((System.currentTimeMillis() - lastOwnOverlayActivityAtMillis) < OVERLAY_TRANSITION_COOLDOWN_MS) {
-            // Something on either overlay changed very recently - this
-            // transition is almost certainly a side effect of that, not a
-            // title-less voice-search landing. See the class doc above.
-            return;
-        }
-        CharSequence className = event.getClassName();
-        if (className == null || !className.toString().contains("EntityActivity")) {
-            return;
-        }
-        List<CharSequence> text = event.getText();
-        if (text == null || text.isEmpty()) {
-            return;
-        }
-        CharSequence firstText = text.get(0);
-        if (firstText == null) {
-            // Pre-existing latent NPE guard: String.contentEquals(null)
-            // throws, and an exception on this thread takes the whole
-            // AccessibilityService down.
-            return;
-        }
-        boolean isDetailPageLabel = false;
-        for (String label : LauncherLocale.systemResources(this)
-                .getStringArray(R.array.voice_search_detail_page_labels)) {
-            // contentEquals (exact), not contains: this is a whole
-            // standalone window label, not a substring of a card's text.
-            if (!label.isEmpty() && label.contentEquals(firstText)) {
-                isDetailPageLabel = true;
-                break;
-            }
-        }
-        if (!isDetailPageLabel) {
-            return;
-        }
-        Log.d(TAG, "Voice-search detail page detected with no title - triggering OCR fallback");
-        triggerOcrCapture();
-    }
-
-    /**
-     * Watches for the user navigating back to the Google TV launcher's
-     * home/lobby screen while a WatchNowOverlay match is still pending, so
-     * that match can be abandoned for good instead of endlessly reappearing.
-     * See LOBBY_CLASS_MARKER's javadoc for exactly how confirmed/unconfirmed
-     * this heuristic currently is.
-     */
-    private void handleLauncherLobbyReturn(AccessibilityEvent event) {
-        if (overlay == null || !overlay.hasPendingMatch()) {
-            return;
-        }
         CharSequence packageName = event.getPackageName();
         if (packageName == null || !GOOGLE_TV_LAUNCHER_PACKAGE.contentEquals(packageName)) {
             return;
         }
-
-        // Unconditional (while a match is pending) diagnostic log - mirrors
-        // the click-event diagnostic log above; needed to confirm or correct
-        // LOBBY_CLASS_MARKER against real captured class names. Cheap: only
-        // runs while hasPendingMatch() is true, i.e. rarely, not on every
-        // launcher window transition in normal use.
-        Log.d(TAG, "Window-state event while match pending: class=" + event.getClassName()
-                + " text=" + event.getText() + " contentDesc=[" + event.getContentDescription() + "]");
-
         CharSequence className = event.getClassName();
-        if (className != null && className.toString().contains(LOBBY_CLASS_MARKER)) {
-            Log.d(TAG, "Detected return to launcher lobby (window class matched \""
-                    + LOBBY_CLASS_MARKER + "\"): " + className);
-            overlay.notifyLauncherLobby();
-            refreshEventTypes();
+        String windowClass = className != null ? className.toString() : "";
+        if (windowClass.contains(LOBBY_CLASS_MARKER)) {
+            onLauncherHome(windowClass);
+        } else if (windowClass.contains(DETAIL_PAGE_CLASS_MARKER)) {
+            handleDetailPage();
         }
     }
 
     /**
-     * Shared fallback trigger for both OCR scenarios: a movie/show click
-     * whose AccessibilityEvent carries no readable title anywhere (see the
-     * two triggerOcrCapture() call sites above, in the click-handling
-     * path), and a voice-search result landing on EntityActivity with only
-     * the generic "Detail Page" label (see handleVoiceSearchDetailPage()).
-     * Neither case has a title yet - this captures the screen, extracts a
-     * title via on-device OCR (OcrCaptureManager, itself gated behind its
+     * Back on the launcher's home screen: whatever detail page was open is
+     * done with, and a button still pending for it is dropped for good
+     * rather than reappearing over the home screen.
+     */
+    private void onLauncherHome(String windowClass) {
+        detailPageReadGeneration++;
+        lastDetailPageTitle = null;
+        if (overlay != null && overlay.hasPendingMatch()) {
+            Log.d(TAG, "Back on the launcher home screen (" + windowClass + ") - dropping the pending button");
+            overlay.notifyLauncherLobby();
+        }
+    }
+
+    /**
+     * The launcher opened a detail page - from a card click or a voice
+     * search alike. Its title is read off the page (LauncherDetailPage),
+     * retrying while the page fills in; see onDetailPageTitle() for when it
+     * is actually offered.
+     */
+    private void handleDetailPage() {
+        if (!Preferences.isDisclosureAccepted(this)) {
+            return;
+        }
+        readDetailPage(++detailPageReadGeneration, 0);
+    }
+
+    /** One attempt at reading the page; schedules the next until DETAIL_PAGE_READ_DELAYS_MS runs out. */
+    private void readDetailPage(int generation, int attempt) {
+        if (generation != detailPageReadGeneration) {
+            return; // A newer page, or a return home, superseded this one.
+        }
+        LauncherDetailPage page;
+        try {
+            page = LauncherDetailPage.read(launcherWindowRoot());
+        } catch (RuntimeException e) {
+            // A node can go stale mid-read when the page changes under it.
+            // Never let that take the service down - just try again.
+            Log.w(TAG, "Could not read the detail page", e);
+            page = null;
+        }
+        if (page != null) {
+            onDetailPageTitle(page);
+            return;
+        }
+        int next = attempt + 1;
+        if (next < DETAIL_PAGE_READ_DELAYS_MS.length) {
+            mainHandler.postDelayed(() -> readDetailPage(generation, next),
+                    DETAIL_PAGE_READ_DELAYS_MS[next] - DETAIL_PAGE_READ_DELAYS_MS[attempt]);
+            return;
+        }
+        onDetailPageWithoutTitle();
+    }
+
+    /**
+     * The launcher's own window, looked up among all on-screen windows
+     * rather than taken as "the active window": while our Watch now button
+     * is up, the button is the active window.
+     */
+    private AccessibilityNodeInfo launcherWindowRoot() {
+        for (AccessibilityWindowInfo window : getWindows()) {
+            if (window.getType() != AccessibilityWindowInfo.TYPE_APPLICATION) {
+                continue;
+            }
+            AccessibilityNodeInfo root = window.getRoot();
+            CharSequence rootPackage = root != null ? root.getPackageName() : null;
+            if (rootPackage != null && GOOGLE_TV_LAUNCHER_PACKAGE.contentEquals(rootPackage)) {
+                return root;
+            }
+        }
+        return getRootInActiveWindow();
+    }
+
+    /**
+     * Offers the title read off a detail page - unless this page has already
+     * been dealt with. The launcher fires the same window-state event every
+     * time focus comes back to the page, which happens a lot: our own
+     * button appearing, hiding or closing, the chooser closing, the user
+     * coming back from Reely Player. So a page is offered once per visit:
+     *
+     *  - the same title as the page last seen is a return to that page, not
+     *    a new one (cleared on the home screen - see onLauncherHome());
+     *  - a title taken from the click moments ago is this page's own title,
+     *    already being looked up;
+     *  - anything right after our own overlay changed is a side effect of
+     *    that change, not the user.
+     *
+     * That last guard comes from TVRelay, where every version without it
+     * looped or dropped the button (2026-08-25: confirmed on-device, three
+     * times over - the button hiding, the chooser closing, and the button
+     * closing all hand focus back to this page). There is no complete list
+     * of which overlay transitions cause it, hence one cooldown bumped by
+     * all of them (markOwnOverlayActivity()) rather than per-case checks.
+     */
+    private void onDetailPageTitle(LauncherDetailPage page) {
+        if (page.title.equals(lastDetailPageTitle)) {
+            return;
+        }
+        lastDetailPageTitle = page.title;
+        String seen = "Detail page: " + page.title
+                + (page.year != LauncherDetailPage.UNKNOWN_YEAR ? " (" + page.year + ")" : "");
+        if (titleHandler.millisSinceLastHandled() < CLICK_TO_DETAIL_PAGE_MS) {
+            // The click carried the title and its lookup is under way, but
+            // the page knows the year, which settles same-name titles - the
+            // click's lookup would ask "which Carrie?" where the page knows
+            // it's the 2026 one. Worth redoing as long as only the button is
+            // waiting on it: with no button, the click's lookup may already
+            // have opened Reely Player.
+            if (page.year != LauncherDetailPage.UNKNOWN_YEAR
+                    && overlay != null && overlay.hasPendingMatch() && !titleHandler.isChooserShowing()) {
+                Log.d(TAG, seen + " - redoing the click's lookup with the year");
+                titleHandler.handle(page.title, page.year);
+            } else {
+                Log.d(TAG, seen + " - already taken from the click");
+            }
+            return;
+        }
+        if ((System.currentTimeMillis() - lastOwnOverlayActivityAtMillis) < OVERLAY_TRANSITION_COOLDOWN_MS
+                || titleHandler.isChooserShowing()) {
+            Log.d(TAG, seen + " - focus back from our own overlay, ignored");
+            return;
+        }
+        Log.d(TAG, "Movie/show detected (" + seen + ")");
+        titleHandler.handle(page.title, page.year);
+    }
+
+    /**
+     * A detail page whose title couldn't be read - a launcher build that
+     * changed the title's id, or a device that still won't let the service
+     * read window content. Reading the screen's pixels is all that's left,
+     * and only if the user turned that on (triggerOcrCapture() checks).
+     * Skipped when the click already found the title.
+     */
+    private void onDetailPageWithoutTitle() {
+        long readWindowMs = DETAIL_PAGE_READ_DELAYS_MS[DETAIL_PAGE_READ_DELAYS_MS.length - 1];
+        if ((overlay != null && overlay.hasPendingMatch())
+                || titleHandler.isChooserShowing()
+                || titleHandler.millisSinceLastHandled() < CLICK_TO_DETAIL_PAGE_MS + readWindowMs
+                || (System.currentTimeMillis() - lastOwnOverlayActivityAtMillis) < OVERLAY_TRANSITION_COOLDOWN_MS) {
+            return;
+        }
+        Log.d(TAG, "Detail page without a readable title - falling back to reading the screen");
+        triggerOcrCapture();
+    }
+
+    /**
+     * Last resort for a detail page whose title couldn't be read from its
+     * nodes - see onDetailPageWithoutTitle(). Captures the screen, extracts
+     * a title via on-device OCR (OcrCaptureManager, itself gated behind its
      * own explicit consent screen - see Preferences.isOcrFallbackEnabled())
      * and feeds the result into the exact same resolve/confirm/launch
-     * pipeline a normal click already uses (handleMovieClick()), rather
-     * than building a second, parallel path.
+     * pipeline a normal click already uses, rather than a second, parallel
+     * path. A no-op unless the user turned the fallback on.
      */
     private void triggerOcrCapture() {
         if (!Preferences.isOcrFallbackEnabled(this)) {
@@ -632,7 +530,6 @@ public class RelayAccessibilityService extends AccessibilityService {
         boolean confirmFirst = overlay != null && overlay.isPermissionGranted();
         if (confirmFirst) {
             overlay.showLoading();
-            refreshEventTypes();
             markOwnOverlayActivity();
         }
 
@@ -652,7 +549,6 @@ public class RelayAccessibilityService extends AccessibilityService {
                     // reasoning as the resolution-failure paths in
                     // handleMovieClick() below.
                     overlay.abandon();
-                    refreshEventTypes();
                     markOwnOverlayActivity();
                 }
             }
@@ -916,9 +812,6 @@ public class RelayAccessibilityService extends AccessibilityService {
         }
         if (youTubeClickGate != null) {
             youTubeClickGate.shutdown();
-        }
-        if (ocrPrefsListener != null) {
-            Preferences.rawPrefs(this).unregisterOnSharedPreferenceChangeListener(ocrPrefsListener);
         }
         if (ocrCaptureManager != null) {
             ocrCaptureManager.shutdown();

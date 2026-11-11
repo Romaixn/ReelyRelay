@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Read by Android through the "android.accessibilityservice" meta-data in
+    AndroidManifest.xml. RelayAccessibilityService.onServiceConnected() sets
+    the event types, package list and flags again in code, so these lines
+    and that code must agree.
+
+    canRetrieveWindowContent is what lets the service read the title off the
+    launcher's detail page (see LauncherDetailPage) when the click on a
+    recommendation carries none.
+-->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeViewClicked"
+    android:accessibilityEventTypes="typeViewClicked|typeWindowStateChanged"
     android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagReportViewIds"
+    android:accessibilityFlags="flagReportViewIds|flagRetrieveInteractiveWindows"
     android:canRetrieveWindowContent="true"
-    android:canTakeScreenshot="true"
     android:notificationTimeout="100"
     android:description="@string/accessibility_service_description"
-    android:packageNames="com.google.android.apps.tv.launcherx,com.amazon.tv.launcher" />
+    android:packageNames="com.google.android.apps.tv.launcherx,com.amazon.tv.launcher,com.google.android.youtube.tv" />

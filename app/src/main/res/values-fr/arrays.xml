@@ -10,15 +10,14 @@
     ignored, so a wrong guess costs nothing - it just never matches.
 
     KNOWN GAP, deliberate: no French equivalent of title_markers,
-    youtube_markers, the subscription phrases or
-    voice_search_detail_page_labels has been captured, so those are left
-    undefined and fall back to the English defaults, which will never match
-    French launcher text. French movie/show detection therefore rests on the
-    locale-agnostic structural fallbacks (android.view.View + a
-    comma-separated content-desc in isMovieOrShowCard, and the hero-banner
-    shape in extractHeroTitle) - the same ones that carry Danish.
+    youtube_markers or the subscription phrases has been captured, so those
+    are left undefined and fall back to the English defaults, which will
+    never match French launcher text. That costs little: on a French Google
+    TV Streamer (2026-11-11) card clicks carried no title at all anyway, and
+    the title is read off the launcher's detail page instead - see
+    LauncherDetailPage, which doesn't depend on the language.
 
-    To close the gap: on a French Google TV, click a price/rating card, a
+    To close the gap anyway: on a French Google TV, click a price/rating card, a
     subscription-gated card and an ad banner with
     "adb logcat -s ReelyRelay:D" running, read the real content-desc out of
     the "Click event:" log line, and add the real markers here. Do not
